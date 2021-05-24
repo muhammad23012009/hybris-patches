@@ -1,4 +1,4 @@
-From 5a77554e8342c1c4f129fa9f72e1d5d9385a2ff5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
 Date: Mon, 26 Nov 2012 15:02:39 -0200
 Subject: [PATCH] (halium) binder: don't use android's check permission feature
@@ -8,33 +8,40 @@ Signed-off-by: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
 Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
 (cherry picked from commit 00a0316b7d4d82437d733479fe7a0890a8f28fe7)
 ---
- cmds/servicemanager/service_manager.c | 7 ++++---
- libs/binder/IServiceManager.cpp       | 4 ++++
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ cmds/servicemanager/ServiceManager.cpp |  5 +++--
+ libs/binder/IServiceManager.cpp        | 11 ++++++++++-
+ 2 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/cmds/servicemanager/service_manager.c b/cmds/servicemanager/service_manager.c
-index ec3fac538..93effee87 100644
---- a/cmds/servicemanager/service_manager.c
-+++ b/cmds/servicemanager/service_manager.c
-@@ -117,9 +117,10 @@ static int svc_can_register(const uint16_t *name, size_t name_len, pid_t spid, c
- {
-     const char *perm = "add";
+diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
+index e80c3210f..0836b2e78 100644
+--- a/cmds/servicemanager/ServiceManager.cpp
++++ b/cmds/servicemanager/ServiceManager.cpp
+@@ -183,9 +183,10 @@ Status ServiceManager::addService(const std::string& name, const sp<IBinder>& bi
+     auto ctx = mAccess->getCallingContext();
  
--    if (multiuser_get_app_id(uid) >= AID_APP) {
--        return 0; /* Don't allow apps to register services */
--    }
+     // apps cannot add services
+-    if (multiuser_get_app_id(ctx.uid) >= AID_APP) {
 +    // Halium: allow phablet
-+    /*if (multiuser_get_app_id(uid) >= AID_APP) {
-+        return 0; // Don't allow apps to register services
++    /*if (multiuser_get_app_id(ctx.uid) >= AID_APP) {
+         return Status::fromExceptionCode(Status::EX_SECURITY);
+-    }
 +    }*/
  
-     return check_mac_perms_from_lookup(spid, sid, uid, perm, str8(name, name_len)) ? 1 : 0;
- }
+     if (!mAccess->canAdd(ctx, name)) {
+         return Status::fromExceptionCode(Status::EX_SECURITY);
 diff --git a/libs/binder/IServiceManager.cpp b/libs/binder/IServiceManager.cpp
-index 4ba6c2a92..254f867e4 100644
+index a9f2d7395..5030cbb3f 100644
 --- a/libs/binder/IServiceManager.cpp
 +++ b/libs/binder/IServiceManager.cpp
-@@ -64,6 +64,8 @@ static String16 _permission("permission");
+@@ -34,6 +34,7 @@
+ #include <cutils/properties.h>
+ #endif
+ 
++
+ #include "Static.h"
+ 
+ #include <unistd.h>
+@@ -131,6 +132,8 @@ static String16 _permission("permission");
  
  bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t* outUid)
  {
@@ -43,15 +50,54 @@ index 4ba6c2a92..254f867e4 100644
      IPCThreadState* ipcState = IPCThreadState::self();
      pid_t pid = ipcState->getCallingPid();
      uid_t uid = ipcState->getCallingUid();
-@@ -74,6 +76,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
+@@ -141,6 +144,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
  
  bool checkPermission(const String16& permission, pid_t pid, uid_t uid)
  {
 +    return true;
 +
-     sp<IPermissionController> pc;
-     gDefaultServiceManagerLock.lock();
-     pc = gPermissionController;
+     static Mutex gPermissionControllerLock;
+     static sp<IPermissionController> gPermissionController;
+ 
+@@ -206,6 +211,7 @@ ServiceManagerShim::ServiceManagerShim(const sp<AidlServiceManager>& impl)
+  : mTheRealServiceManager(impl)
+ {}
+ 
++
+ sp<IBinder> ServiceManagerShim::getService(const String16& name) const
+ {
+     static bool gSystemBootCompleted = false;
+@@ -216,6 +222,7 @@ sp<IBinder> ServiceManagerShim::getService(const String16& name) const
+     const bool isVendorService =
+         strcmp(ProcessState::self()->getDriverName().c_str(), "/dev/vndbinder") == 0;
+     const long timeout = uptimeMillis() + 5000;
++
+     // Vendor code can't access system properties
+     if (!gSystemBootCompleted && !isVendorService) {
+ #ifdef __ANDROID__
+@@ -258,6 +265,7 @@ status_t ServiceManagerShim::addService(const String16& name, const sp<IBinder>&
+     Status status = mTheRealServiceManager->addService(
+         String8(name).c_str(), service, allowIsolated, dumpsysPriority);
+     return status.exceptionCode();
++
+ }
+ 
+ Vector<String16> ServiceManagerShim::listServices(int dumpsysPriority)
+@@ -271,6 +279,7 @@ Vector<String16> ServiceManagerShim::listServices(int dumpsysPriority)
+     res.setCapacity(ret.size());
+     for (const std::string& name : ret) {
+         res.push(String16(name.c_str()));
++
+     }
+     return res;
+ }
+@@ -356,4 +365,4 @@ bool ServiceManagerShim::isDeclared(const String16& name) {
+     return declared;
+ }
+ 
+-} // namespace android
++} // namespace android
+\ No newline at end of file
 -- 
-2.28.0
+2.31.1
 

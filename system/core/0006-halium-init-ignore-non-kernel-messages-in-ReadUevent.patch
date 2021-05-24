@@ -1,4 +1,4 @@
-From 7d094446c1bb707b8cd476158c9197daec542dca Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: NeKit <nekit1000@gmail.com>
 Date: Sun, 19 Apr 2020 23:47:38 +0200
 Subject: [PATCH] (halium) init: ignore non-kernel messages in ReadUevent
@@ -11,14 +11,14 @@ with udev which will send its own events to netlink socket.
 
 Change-Id: Ib7e4521899035e2dc67efaf27fc1bea13659efb4
 ---
- init/uevent_listener.cpp | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ init/uevent_listener.cpp | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/init/uevent_listener.cpp b/init/uevent_listener.cpp
-index 26f7ed6a9..f63c1d6c9 100644
+index 7cd396a8b..55b2b3bda 100644
 --- a/init/uevent_listener.cpp
 +++ b/init/uevent_listener.cpp
-@@ -99,7 +99,19 @@ bool UeventListener::ReadUevent(Uevent* uevent) const {
+@@ -99,7 +99,19 @@ ReadUeventResult UeventListener::ReadUevent(Uevent* uevent) const {
      char msg[UEVENT_MSG_LEN + 2];
      int n = uevent_kernel_multicast_recv(device_fd_, msg, UEVENT_MSG_LEN);
      if (n <= 0) {
@@ -34,11 +34,26 @@ index 26f7ed6a9..f63c1d6c9 100644
 +            uevent->firmware.clear();
 +            uevent->partition_name.clear();
 +            uevent->device_name.clear();
-+            return true;
++            return ReadUeventResult::kSuccess;
 +        } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
-             LOG(ERROR) << "Error reading from Uevent Fd";
+             PLOG(ERROR) << "Error reading from Uevent Fd";
          }
-         return false;
+         return ReadUeventResult::kFailed;
+@@ -107,6 +119,7 @@ ReadUeventResult UeventListener::ReadUevent(Uevent* uevent) const {
+     if (n >= UEVENT_MSG_LEN) {
+         LOG(ERROR) << "Uevent overflowed buffer, discarding";
+         return ReadUeventResult::kInvalid;
++
+     }
+ 
+     msg[n] = '\0';
+@@ -224,4 +237,4 @@ void UeventListener::Poll(const ListenerCallback& callback,
+ }
+ 
+ }  // namespace init
+-}  // namespace android
++}  // namespace android
+\ No newline at end of file
 -- 
-2.28.0
+2.31.1
 

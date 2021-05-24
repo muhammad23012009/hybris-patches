@@ -1,4 +1,4 @@
-From 79f3537ae0e6f7ec4f90eea3cb9964504bef59d2 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Bj=C3=B6rn=20Bidar?= <theodorstormgrade@gmail.com>
 Date: Mon, 21 Oct 2019 07:12:52 +0200
 Subject: [PATCH] (hybris) Disable some tests to avoid build errors.
@@ -47,5 +47,5 @@ index a6f87ea2e5d..40c005e8e63 100644
 -
 -$(LOCAL_BUILT_MODULE): $(corrupted_classes2_dex)
 -- 
-2.23.0
+2.31.1
 

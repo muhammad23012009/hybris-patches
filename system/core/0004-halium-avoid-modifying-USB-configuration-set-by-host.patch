@@ -1,33 +1,140 @@
-From 97761ae4bcf2e821e4a0bb63d354478b5e02cb37 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
 Date: Sat, 19 Dec 2020 21:42:41 +0200
 Subject: [PATCH] (halium) avoid modifying USB configuration set by host
 
 Change-Id: I76ff71ca5784be1be93819a5b9bfb74a6c5c0da2
 ---
- rootdir/init.rc | 6 ++++--
- usbd/usbd.rc    | 2 +-
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ rootdir/init.rc | 22 +++++++++++++++++++---
+ usbd/usbd.rc    |  2 +-
+ 2 files changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index 1fcdb141e..f059a0ad4 100644
+index 25b95dc00..cc1b0925f 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -5,10 +5,12 @@
+@@ -5,12 +5,16 @@
  #
  
  import /init.environ.rc
--import /init.usb.rc
+-import /system/etc/init/hw/init.usb.rc
 +# Disabled for Halium
-+#import /init.usb.rc
++#import /system/etc/init/hw/init.usb.rc
++
  import /init.${ro.hardware}.rc
  import /vendor/etc/init/hw/init.${ro.hardware}.rc
--import /init.usb.configfs.rc
+-import /system/etc/init/hw/init.usb.configfs.rc
 +# Disabled for Halium
-+#import /init.usb.configfs.rc
- import /init.${ro.zygote}.rc
++#import /system/etc/init/hw/init.usb.configfs.rc
+ import /system/etc/init/hw/init.${ro.zygote}.rc
  
++
  # Cgroups are mounted right before early-init using list from /etc/cgroups.json
+ on early-init
+     # Disable sysrq from keyboard
+@@ -122,6 +126,7 @@ on init
+     symlink /proc/self/fd/1 /dev/stdout
+     symlink /proc/self/fd/2 /dev/stderr
+ 
++
+     # Create energy-aware scheduler tuning nodes
+     mkdir /dev/stune/foreground
+     mkdir /dev/stune/background
+@@ -221,6 +226,7 @@ on init
+     mkdir /mnt/runtime/full/self 0755 root root
+ 
+     # Symlink to keep legacy apps working in multi-user world
++
+     symlink /storage/self/primary /mnt/sdcard
+     symlink /mnt/user/0/primary /mnt/runtime/default/self/primary
+ 
+@@ -336,6 +342,7 @@ on init
+     # This is needed by any process that uses socket tagging.
+     chmod 0644 /dev/xt_qtaguid
+ 
++
+     mount bpf bpf /sys/fs/bpf nodev noexec nosuid
+ 
+     # Create location for fs_mgr to store abbreviated output from filesystem
+@@ -362,6 +369,7 @@ on init
+ 
+     export DOWNLOAD_CACHE /data/cache
+ 
++
+     # This allows the ledtrig-transient properties to be created here so
+     # that they can be chown'd to system:system later on boot
+     write /sys/class/leds/vibrator/trigger "transient"
+@@ -463,6 +471,7 @@ on post-fs
+     # The bind+remount combination allows this to work in containers.
+     mount rootfs rootfs / remount bind ro nodev
+ 
++
+     # Make sure /sys/kernel/debug (if present) is labeled properly
+     # Note that tracefs may be mounted under debug, so we need to cross filesystems
+     restorecon --recursive --cross-filesystems /sys/kernel/debug
+@@ -533,6 +542,7 @@ on post-fs-data
+     mark_post_data
+ 
+     # Start checkpoint before we touch data
++
+     exec - system system -- /system/bin/vdc checkpoint prepareCheckpoint
+ 
+     # We chown/chmod /data again so because mount is run as root + defaults
+@@ -549,6 +559,7 @@ on post-fs-data
+     mkdir /data/bootchart 0755 shell shell encryption=Require
+     bootchart start
+ 
++
+     # Make sure that apexd is started in the default namespace
+     enter_default_mount_ns
+ 
+@@ -608,6 +619,7 @@ on post-fs-data
+     mkdir /data/misc/ethernet 0770 system system
+     mkdir /data/misc/dhcp 0770 dhcp dhcp
+     mkdir /data/misc/user 0771 root root
++
+     # give system access to wpa_supplicant.conf for backup and restore
+     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+     mkdir /data/local 0751 root root encryption=Require
+@@ -706,6 +718,7 @@ on post-fs-data
+     mkdir /data/user 0711 system system encryption=None
+     mkdir /data/user_de 0711 system system encryption=None
+ 
++
+     # Unlink /data/user/0 if we previously symlink it to /data/data
+     rm /data/user/0
+ 
+@@ -837,6 +850,7 @@ on zygote-start && property:ro.crypto.state=encrypted && property:ro.crypto.type
+     start zygote
+     start zygote_secondary
+ 
++
+ on boot
+     # basic network init
+     ifup lo
+@@ -852,6 +866,7 @@ on boot
+     write /proc/sys/vm/overcommit_memory 1
+     write /proc/sys/vm/min_free_order_shift 4
+ 
++
+     # System server manages zram writeback
+     chown root system /sys/block/zram0/idle
+     chmod 0664 /sys/block/zram0/idle
+@@ -876,6 +891,7 @@ on boot
+     write /sys/devices/virtual/block/${dev.mnt.blk.data}/queue/discard_max_bytes 134217728
+ 
+     # Permissions for System Server and daemons.
++
+     chown system system /sys/power/autosleep
+ 
+     chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+@@ -1092,4 +1108,4 @@ on userspace-reboot-resume
+   trigger boot
+ 
+ on property:sys.boot_completed=1 && property:sys.init.userspace_reboot.in_progress=1
+-  setprop sys.init.userspace_reboot.in_progress ""
++  setprop sys.init.userspace_reboot.in_progress ""
+\ No newline at end of file
 diff --git a/usbd/usbd.rc b/usbd/usbd.rc
 index 809044aaa..56c89344f 100644
 --- a/usbd/usbd.rc
@@ -39,5 +146,5 @@ index 809044aaa..56c89344f 100644
      oneshot
      user root
 -- 
-2.28.0
+2.31.1
 

@@ -1,4 +1,4 @@
-From 28c1ae95f909fcc7edf32f5cbe8b7c7b33fa8914 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Thu, 11 Feb 2016 15:43:33 +0100
 Subject: [PATCH] (halium) Enable video and audio recording from camera.
@@ -7,25 +7,25 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
 
 Change-Id: I9f0c80bf75c0ee713d27fe4460e409cef51cd4c2
 ---
- media/libaudioclient/AudioRecord.cpp          | 112 +++++++-----------
+ media/libaudioclient/AudioRecord.cpp          | 114 ++++++++----------
  .../libaudioclient/camera_record_service.cpp  |  21 ++--
  .../include/media/camera_record_service.h     |  12 +-
- 3 files changed, 69 insertions(+), 76 deletions(-)
+ 3 files changed, 72 insertions(+), 75 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index fb19455ae..6bdf12fbd 100644
+index 44acbd805b..c5fd6af292 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -358,7 +358,7 @@ status_t AudioRecord::set(
+@@ -375,7 +375,7 @@ status_t AudioRecord::set(
      mMarkerReached = false;
      mNewPosition = 0;
      mUpdatePeriod = 0;
--    AudioSystem::acquireAudioSessionId(mSessionId, -1);
-+    // AudioSystem::acquireAudioSessionId(mSessionId, -1);
+-    AudioSystem::acquireAudioSessionId(mSessionId, mClientPid, mClientUid);
++    // AudioSystem::acquireAudioSessionId(mSessionId, mClientPid, mClientUid);
      mSequence = 1;
      mObservedSequence = mSequence;
      mInOverrun = false;
-@@ -370,6 +370,8 @@ exit:
+@@ -387,6 +387,8 @@ exit:
      if (status != NO_ERROR) {
          mMediaMetrics.markError(status, __FUNCTION__);
      }
@@ -34,24 +34,25 @@ index fb19455ae..6bdf12fbd 100644
      return status;
  }
  
-@@ -408,6 +410,7 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
+@@ -443,6 +445,7 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
  
-     status_t status = NO_ERROR;
+ 
      if (!(flags & CBLK_INVALID)) {
 +        ALOGV("mAudioRecord->start()");
          status = mAudioRecord->start(event, triggerSession).transactionError();
          if (status == DEAD_OBJECT) {
              flags |= CBLK_INVALID;
-@@ -660,8 +663,6 @@ const char * AudioRecord::convertTransferToText(transfer_type transferType) {
- // must be called with mLock held
- status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String16& opPackageName)
+@@ -738,8 +741,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
  {
+     const int64_t beginNs = systemTime();
+ 
 -    IAudioFlinger::CreateRecordInput input;
 -    IAudioFlinger::CreateRecordOutput output;
++
      audio_session_t originalSessionId;
      sp<media::IAudioRecord> record;
      void *iMemPointer;
-@@ -705,29 +706,8 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -785,29 +787,9 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
          }
      }
  
@@ -69,7 +70,9 @@ index fb19455ae..6bdf12fbd 100644
 -    }
 -    input.opPackageName = opPackageName;
 -    input.riid = mTracker->getRiid();
--
++    // static audio_io_handle_t == 1
++    audio_io_handle_t input = 1;
+ 
 -    input.flags = mFlags;
 -    // The notification frame count is the period between callbacks, as suggested by the client
 -    // but moderated by the server.  For record, the calculations are done entirely on server side.
@@ -78,12 +81,10 @@ index fb19455ae..6bdf12fbd 100644
 -    input.selectedDeviceId = mSelectedDeviceId;
 -    input.sessionId = mSessionId;
 -    originalSessionId = mSessionId;
-+    // static audio_io_handle_t == 1
-+    audio_io_handle_t input = 1;
  
      // Initialize the input reader RecordThread:
      status = recordService->initRecord(mSampleRate, mFormat, mChannelMask);
-@@ -736,41 +716,42 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -816,37 +798,38 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
          return status;
      }
  
@@ -117,8 +118,8 @@ index fb19455ae..6bdf12fbd 100644
          ALOGE("CameraRecordService could not create record track, status: %d", status);
          goto exit;
      }
+ 
 -    ALOG_ASSERT(record != 0);
-+
 +    record = recording.ar;
 +    iMem = recording.cblk;
 +    bufferMem = recording.buffers;
@@ -137,19 +138,22 @@ index fb19455ae..6bdf12fbd 100644
 -    mRoutedDeviceId = output.selectedDeviceId;
 -    mSessionId = output.sessionId;
 -    mSampleRate = output.sampleRate;
--
--    if (output.cblk == 0) {
 +    if (iMem == 0) {
+ 
+-    if (output.cblk == 0) {
          ALOGE("%s(%d): Could not get control block", __func__, mPortId);
          status = NO_INIT;
          goto exit;
-     }
--    iMemPointer = output.cblk ->pointer();
-+    iMemPointer = iMem->pointer();
+@@ -855,7 +838,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+     //       (see declaration for details).
+     //       Either document why it is safe in this case or address the
+     //       issue (e.g. by copying).
+-    iMemPointer = output.cblk ->unsecurePointer();
++    iMemPointer = iMem->unsecurePointer();
      if (iMemPointer == NULL) {
          ALOGE("%s(%d): Could not get control block pointer", __func__, mPortId);
          status = NO_INIT;
-@@ -782,10 +763,10 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -867,14 +850,14 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
      // The buffers are either immediately after the control block,
      // or in a separate area at discretion of server.
      void *buffers;
@@ -157,12 +161,16 @@ index fb19455ae..6bdf12fbd 100644
 +    if (bufferMem == 0) {
          buffers = cblk + 1;
      } else {
--        buffers = output.buffers->pointer();
-+        buffers = bufferMem->pointer();
+         // TODO: Using unsecurePointer() has some associated security pitfalls
+         //       (see declaration for details).
+         //       Either document why it is safe in this case or address the
+         //       issue (e.g. by copying).
+-        buffers = output.buffers->unsecurePointer();
++        buffers = bufferMem->unsecurePointer();
          if (buffers == NULL) {
              ALOGE("%s(%d): Could not get buffer pointer", __func__, mPortId);
              status = NO_INIT;
-@@ -799,41 +780,40 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -888,41 +871,42 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
          mDeathNotifier.clear();
      }
      mAudioRecord = record;
@@ -181,6 +189,7 @@ index fb19455ae..6bdf12fbd 100644
 +    if (temp < frameCount || (frameCount == 0 && temp == 0)) {
 +        ALOGW("%s: Requested frameCount %zu but received frameCount %zu",
 +              __func__, frameCount,  temp);
++
      }
 +    frameCount = temp;
  
@@ -193,6 +202,7 @@ index fb19455ae..6bdf12fbd 100644
 +    if (notificationFrames == 0 || notificationFrames > frameCount) {
 +        ALOGW("%s: Received notificationFrames %zu for frameCount %zu",
 +                __func__, notificationFrames, frameCount);
++
      }
 -    mNotificationFramesAct = (uint32_t)output.notificationFrameCount;
 +    mNotificationFramesAct = notificationFrames;
@@ -218,8 +228,17 @@ index fb19455ae..6bdf12fbd 100644
      // If IAudioRecord is re-created, don't let the requested frameCount
      // decrease.  This can confuse clients that cache frameCount().
      if (mFrameCount > mReqFrameCount) {
+@@ -947,7 +931,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+         .set(AMEDIAMETRICS_PROP_SESSIONID, (int32_t)mSessionId)
+         .set(AMEDIAMETRICS_PROP_TRACKID, mPortId)
+         .set(AMEDIAMETRICS_PROP_SOURCE, toString(mAttributes.source).c_str())
+-        .set(AMEDIAMETRICS_PROP_THREADID, (int32_t)output.inputId)
++        .set(AMEDIAMETRICS_PROP_THREADID, (int32_t)input)
+         .set(AMEDIAMETRICS_PROP_SELECTEDDEVICEID, (int32_t)mSelectedDeviceId)
+         .set(AMEDIAMETRICS_PROP_ROUTEDDEVICEID, (int32_t)mRoutedDeviceId)
+         .set(AMEDIAMETRICS_PROP_ENCODING, toString(mFormat).c_str())
 diff --git a/media/libaudioclient/camera_record_service.cpp b/media/libaudioclient/camera_record_service.cpp
-index 9e0dabd02..4312bd676 100644
+index 9e0dabd027..4312bd6765 100644
 --- a/media/libaudioclient/camera_record_service.cpp
 +++ b/media/libaudioclient/camera_record_service.cpp
 @@ -59,7 +59,7 @@ status_t BpCameraRecordService::initRecord(
@@ -297,7 +316,7 @@ index 9e0dabd02..4312bd676 100644
  
  sp<CameraRecordService>& CameraRecordService::service_instance()
 diff --git a/media/libaudioclient/include/media/camera_record_service.h b/media/libaudioclient/include/media/camera_record_service.h
-index 8a4e7f585..eb544d1d6 100644
+index 8a4e7f5858..eb544d1d62 100644
 --- a/media/libaudioclient/include/media/camera_record_service.h
 +++ b/media/libaudioclient/include/media/camera_record_service.h
 @@ -21,6 +21,7 @@
@@ -348,5 +367,5 @@ index 8a4e7f585..eb544d1d6 100644
                                  audio_format_t format,
                                  audio_channel_mask_t channelMask,
 -- 
-2.30.1
+2.31.1
 

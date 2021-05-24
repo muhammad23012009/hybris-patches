@@ -1,81 +1,60 @@
-From 3ee2379cf25e412d4bb379cf52c043cdb2eca780 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
 Date: Sun, 7 Mar 2021 17:13:31 +0200
 Subject: [PATCH] (halium) disable SELinux checks in ServiceManager
 
 Change-Id: Ida8e91453db58b1123468931c94d4a40d273b0b3
 ---
- cmds/servicemanager/service_manager.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ cmds/servicemanager/Access.cpp | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/cmds/servicemanager/service_manager.c b/cmds/servicemanager/service_manager.c
-index ec3fac538..c971805db 100644
---- a/cmds/servicemanager/service_manager.c
-+++ b/cmds/servicemanager/service_manager.c
-@@ -61,9 +61,12 @@ int str16eq(const uint16_t *a, const char *b)
- static char *service_manager_context;
- static struct selabel_handle* sehandle;
+diff --git a/cmds/servicemanager/Access.cpp b/cmds/servicemanager/Access.cpp
+index b7e520f2f..be3cf78a3 100644
+--- a/cmds/servicemanager/Access.cpp
++++ b/cmds/servicemanager/Access.cpp
+@@ -33,6 +33,9 @@ constexpr bool kIsVendor = false;
+ static std::string getPidcon(pid_t pid) {
+     android_errorWriteLog(0x534e4554, "121035042");
  
--static bool check_mac_perms(pid_t spid, const char* sid, uid_t uid, const char *tctx, const char *perm, const char *name)
-+static bool check_mac_perms(__attribute__ ((unused)) pid_t spid, __attribute__ ((unused)) const char* sid, __attribute__ ((unused)) uid_t uid, __attribute__ ((unused)) const char* tctx, __attribute__ ((unused)) const char* perm, __attribute__ ((unused)) const char* name)
- {
--    char *lookup_sid = NULL;
 +    // Disabled for Halium
-+    bool allowed = true;
++    return "";
 +
-+    /*char *lookup_sid = NULL;
-     const char *class = "service_manager";
-     bool allowed;
-     struct audit_data ad;
-@@ -84,7 +87,7 @@ static bool check_mac_perms(pid_t spid, const char* sid, uid_t uid, const char *
-     int result = selinux_check_access(sid ? sid : lookup_sid, tctx, class, perm, (void *) &ad);
-     allowed = (result == 0);
+     char* lookup = nullptr;
+     if (getpidcon(pid, &lookup) < 0) {
+         LOG(ERROR) << "SELinux: getpidcon(pid=" << pid << ") failed to retrieve pid context";
+@@ -88,9 +91,10 @@ Access::Access() {
+     cb.func_log = kIsVendor ? selinux_vendor_log_callback : selinux_log_callback;
+     selinux_set_callback(SELINUX_CB_LOG, cb);
  
--    freecon(lookup_sid);
-+    freecon(lookup_sid);*/
-     return allowed;
+-    CHECK(selinux_status_open(true /*fallback*/) >= 0);
++    // Disabled for Halium
++    /*CHECK(selinux_status_open(true) >= 0);
+ 
+-    CHECK(getcon(&mThisProcessContext) == 0);
++    CHECK(getcon(&mThisProcessContext) == 0);*/
  }
  
-@@ -98,7 +101,8 @@ static bool check_mac_perms_from_lookup(pid_t spid, const char* sid, uid_t uid,
-     bool allowed;
-     char *tctx = NULL;
+ Access::~Access() {
+@@ -124,6 +128,9 @@ bool Access::canList(const CallingContext& ctx) {
  
--    if (!sehandle) {
+ bool Access::actionAllowed(const CallingContext& sctx, const char* tctx, const char* perm,
+         const std::string& tname) {
 +    // Disabled for Halium
-+    /*if (!sehandle) {
-         ALOGE("SELinux: Failed to find sehandle. Aborting service_manager.\n");
-         abort();
-     }
-@@ -106,7 +110,7 @@ static bool check_mac_perms_from_lookup(pid_t spid, const char* sid, uid_t uid,
-     if (selabel_lookup(sehandle, &tctx, name, 0) != 0) {
-         ALOGE("SELinux: No match for %s in service_contexts.\n", name);
-         return false;
--    }
-+    }*/
++    return true;
++
+     const char* tclass = "service_manager";
  
-     allowed = check_mac_perms(spid, sid, uid, tctx, perm, name);
-     freecon(tctx);
-@@ -425,14 +429,16 @@ int main(int argc, char** argv)
- #endif
-     selinux_status_open(true);
+     AuditCallbackData data = {
+@@ -136,6 +143,9 @@ bool Access::actionAllowed(const CallingContext& sctx, const char* tctx, const c
+ }
  
--    if (sehandle == NULL) {
+ bool Access::actionAllowedFromLookup(const CallingContext& sctx, const std::string& name, const char *perm) {
 +    // Disabled for Halium
-+    /*if (sehandle == NULL) {
-         ALOGE("SELinux: Failed to acquire sehandle. Aborting.\n");
-         abort();
--    }
-+    }*/
- 
-     if (getcon(&service_manager_context) != 0) {
--        ALOGE("SELinux: Failed to acquire service_manager context. Aborting.\n");
--        abort();
-+        // Disabled for Halium
-+        /*ALOGE("SELinux: Failed to acquire service_manager context. Aborting.\n");
-+        abort();*/
-     }
- 
- 
++    return true;
++
+     char *tctx = nullptr;
+     if (selabel_lookup(getSehandle(), &tctx, name.c_str(), SELABEL_CTX_ANDROID_SERVICE) != 0) {
+         LOG(ERROR) << "SELinux: No match for " << name << " in service_contexts.\n";
 -- 
-2.30.1
+2.31.1
 

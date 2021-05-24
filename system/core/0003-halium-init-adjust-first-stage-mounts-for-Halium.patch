@@ -1,18 +1,26 @@
-From 7484a0a1be7ca00e40e17dc0cd4f6ed6f08c7735 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
 Date: Sat, 19 Dec 2020 21:39:09 +0200
 Subject: [PATCH] (halium) init: adjust first stage mounts for Halium
 
 Change-Id: I575e5f1072e69ffec9eea9adf96988f37f393018
 ---
- init/first_stage_init.cpp | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ init/first_stage_init.cpp | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index b148fb231..e6e49ed4a 100644
+index 936a77add..ff0b4cc97 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -121,7 +121,8 @@ int FirstStageMain(int argc, char** argv) {
+@@ -96,6 +96,7 @@ void FreeRamdisk(DIR* dir, dev_t dev) {
+ 
+ bool ForceNormalBoot(const std::string& cmdline) {
+ 
++
+     return cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;
+ }
+ 
+@@ -194,7 +195,8 @@ int FirstStageMain(int argc, char** argv) {
      // Disabled for Anbox, mounted by host system instead
      //CHECKCALL(mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755"));
      //CHECKCALL(mkdir("/dev/pts", 0755));
@@ -22,7 +30,7 @@ index b148fb231..e6e49ed4a 100644
      //CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
  #define MAKE_STR(x) __STRING(x)
      //CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
-@@ -155,18 +156,23 @@ int FirstStageMain(int argc, char** argv) {
+@@ -230,14 +232,21 @@ int FirstStageMain(int argc, char** argv) {
      // should be done in rc files.
      // Mount staging areas for devices managed by vold
      // See storage config details at http://source.android.com/devices/storage/
@@ -42,16 +50,12 @@ index b148fb231..e6e49ed4a 100644
 -    CHECKCALL(mkdir("/mnt/product", 0755));
 +    //CHECKCALL(mkdir("/mnt/product", 0755));
 +    mkdir("/mnt/product", 0755);
++
++
++
  
-     // /apex is used to mount APEXes
--    CHECKCALL(mount("tmpfs", "/apex", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
--                    "mode=0755,uid=0,gid=0"));
-+    // Disabled for Halium, mounted by LXC config
-+    //CHECKCALL(mount("tmpfs", "/apex", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
-+    //                "mode=0755,uid=0,gid=0"));
  
      // /debug_ramdisk is used to preserve additional files from the debug ramdisk
-     CHECKCALL(mount("tmpfs", "/debug_ramdisk", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
 -- 
-2.28.0
+2.31.1
 
