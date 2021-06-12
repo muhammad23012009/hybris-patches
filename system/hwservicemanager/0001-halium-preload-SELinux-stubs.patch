@@ -14,7 +14,7 @@ index 96fd5b0..16c0405 100644
 +++ b/hwservicemanager.rc
 @@ -1,4 +1,5 @@
  service hwservicemanager /system/bin/hwservicemanager
-+    setenv LD_PRELOAD /system/lib64/libselinux_stubs.so
++    setenv LD_PRELOAD /system/lib/libselinux_stubs.so
      user system
      disabled
      group system readproc

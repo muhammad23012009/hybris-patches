@@ -29,7 +29,7 @@ index 3fa4d7d..a754c47 100644
 +++ b/cmds/servicemanager/vndservicemanager.rc
 @@ -1,4 +1,5 @@
  service vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
-+    setenv LD_PRELOAD /system/lib64/libselinux_stubs.so
++    setenv LD_PRELOAD /system/lib/libselinux_stubs.so
      class core
      user system
      group system readproc
