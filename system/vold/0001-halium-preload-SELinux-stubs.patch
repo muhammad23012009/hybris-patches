@@ -16,7 +16,7 @@ index 93d8786..aee62f7 100644
  service vold /system/bin/vold \
          --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
          --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
-+    setenv LD_PRELOAD /system/lib64/libselinux_stubs.so
++    setenv LD_PRELOAD /system/lib/libselinux_stubs.so
      class core
      ioprio be 2
      writepid /dev/cpuset/foreground/tasks
