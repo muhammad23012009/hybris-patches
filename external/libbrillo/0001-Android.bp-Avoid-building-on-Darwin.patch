@@ -1,0 +1,71 @@
+From 6d05f137048f34c0e004155f7541394ab42857fe Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 24 Jun 2021 19:50:04 +0200
+Subject: [PATCH] Android.bp: Avoid building on Darwin
+
+By default libbrillo builds on macOS using AppKit, which
+causes ill-formatted headers to be included.
+So for the sanity of everyone involved, just disable building
+the component on macOS completely.
+
+Change-Id: If4ce9b93d45404005ecc33de697564e0ea7758f8
+---
+ Android.bp | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index af10fa8..17c9549 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -148,6 +148,9 @@ cc_library {
+         android: {
+             srcs: libbrillo_linux_sources,
+         },
++        darwin: {
++            enabled: false
++        }
+     },
+ }
+ 
+@@ -199,16 +202,12 @@ cc_library {
+ 
+     host_supported: true,
+     target: {
+-        darwin: {
+-            cflags: [
+-                "-D_FILE_OFFSET_BITS=64",
+-                "-Doff64_t=off_t",
+-                "-Dlseek64=lseek",
+-            ],
+-        },
+         windows: {
+             enabled: false,
+         },
++        darwin: {
++            enabled: false
++        }
+     },
+ }
+ 
+@@ -228,15 +227,12 @@ cc_library_shared {
+ 
+     host_supported: true,
+     target: {
+-        darwin: {
+-            cflags: [
+-                "-D_FILE_OFFSET_BITS=64",
+-                "-Doff64_t=off_t",
+-            ],
+-        },
+         windows: {
+             enabled: false,
+         },
++        darwin: {
++            enabled: false
++        }
+     },
+ }
+ 
+-- 
+2.30.1 (Apple Git-130)
+

@@ -1,0 +1,27 @@
+From 90a40ef6780af219fc0ef1ea6052a5241333daba Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 24 Jun 2021 19:46:44 +0200
+Subject: [PATCH] x86_darwin_host: Allow building with macOS 11.3 SDK
+
+This enables building with Xcode 12.5 installed.
+
+Change-Id: Ib68b631e95d154bdc1805facf5400e8f9d4c9d54
+---
+ cc/config/x86_darwin_host.go | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/cc/config/x86_darwin_host.go b/cc/config/x86_darwin_host.go
+index 52d63514..1c7eb4ec 100644
+--- a/cc/config/x86_darwin_host.go
++++ b/cc/config/x86_darwin_host.go
+@@ -83,6 +83,7 @@ var (
+ 		"10.12",
+ 		"10.13",
+ 		"10.14",
++		"11.3",
+ 	}
+ 
+ 	darwinAvailableLibraries = append(
+-- 
+2.30.1 (Apple Git-130)
+

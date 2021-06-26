@@ -1,0 +1,39 @@
+From b788a677b4a201d4f12d31e3f5f95a323c39a20b Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 24 Jun 2021 19:53:26 +0200
+Subject: [PATCH] elf.h: Add missing __BEGIN_DECLS & __END_DECLS defines
+
+These defines seem to be Linux-specific and not available on
+macOS by default, so add them here where they're needed.
+
+This allows building kernel images on macOS.
+
+Change-Id: I25a30179f7fa595a47a0ea366ebd411f64f1b57d
+---
+ libelf/elf.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/libelf/elf.h b/libelf/elf.h
+index 9e9ffdc2..bcc89454 100644
+--- a/libelf/elf.h
++++ b/libelf/elf.h
+@@ -23,6 +23,16 @@
+ #include <features.h>
+ #endif
+ 
++#ifdef __APPLE__
++#ifdef __cplusplus
++# define __BEGIN_DECLS extern "C" {
++# define __END_DECLS }
++#else
++# define __BEGIN_DECLS /* empty */
++# define __END_DECLS /* empty */
++#endif
++#endif
++
+ __BEGIN_DECLS
+ 
+ /* Standard ELF types.  */
+-- 
+2.30.1 (Apple Git-130)
+

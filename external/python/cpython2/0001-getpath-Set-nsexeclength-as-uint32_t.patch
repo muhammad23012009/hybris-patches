@@ -1,0 +1,31 @@
+From 019ac7d7aca89c5ce5edfd79fc79d2882c3df4e0 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 24 Jun 2021 19:59:59 +0200
+Subject: [PATCH] getpath: Set nsexeclength as uint32_t
+
+This fixes a FTBFS on macOS Big Sur.
+
+Change-Id: I35dafdcdaa9cdabc892a766552ec9a0660f87837
+---
+ Modules/getpath.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/Modules/getpath.c b/Modules/getpath.c
+index e9d969bd1f..03520b976a 100644
+--- a/Modules/getpath.c
++++ b/Modules/getpath.c
+@@ -439,11 +439,7 @@ calculate_path(void)
+     NSModule pythonModule;
+ #endif
+ #ifdef __APPLE__
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+     uint32_t nsexeclength = MAXPATHLEN;
+-#else
+-    unsigned long nsexeclength = MAXPATHLEN;
+-#endif
+ #endif
+ 
+         /* If there is no slash in the argv0 path, then we have to
+-- 
+2.30.1 (Apple Git-130)
+

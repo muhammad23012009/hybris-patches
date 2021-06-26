@@ -1,0 +1,39 @@
+From 60b90e1062ac31eaf2f084c15585db820c34aaf0 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 24 Jun 2021 19:51:34 +0200
+Subject: [PATCH] Android.bp: Avoid building on Darwin
+
+By default libchrome builds on macOS using AppKit, which
+causes ill-formatted headers to be included.
+So for the sanity of everyone involved, just disable building
+the component on macOS completely.
+
+Change-Id: I2c7f993b2d5908fa8b3349058a5e028f98ee63ba
+---
+ Android.bp | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 9dfffca..0d3752d 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -57,15 +57,7 @@ cc_defaults {
+             ],
+         },
+         darwin: {
+-            cflags: [
+-                "-D_FILE_OFFSET_BITS=64",
+-            ],
+-            host_ldlibs: [
+-                "-framework AppKit",
+-                "-framework CoreFoundation",
+-                "-framework Foundation",
+-                "-framework Security",
+-            ],
++            enabled: false,
+         },
+     },
+ }
+-- 
+2.30.1 (Apple Git-130)
+
