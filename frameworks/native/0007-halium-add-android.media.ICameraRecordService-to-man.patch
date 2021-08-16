@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Tue, 25 May 2021 21:28:24 +0200
+Subject: [PATCH] (halium) add android.media.ICameraRecordService to manual
+ interface whitelist
+
+Needed for Ubuntu Touch camera record service
+
+Change-Id: I9621e97bf209dd15d11d046553c1ab0bd6d16480
+---
+ libs/binder/include/binder/IInterface.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libs/binder/include/binder/IInterface.h b/libs/binder/include/binder/IInterface.h
+index 7116154..3841f00 100644
+--- a/libs/binder/include/binder/IInterface.h
++++ b/libs/binder/include/binder/IInterface.h
+@@ -255,6 +255,7 @@ constexpr const char* const kManualInterfaces[] = {
+   "android.media.IAudioPolicyServiceClient",
+   "android.media.IAudioService",
+   "android.media.IAudioTrack",
++  "android.media.ICameraRecordService",
+   "android.media.IDataSource",
+   "android.media.IDrmClient",
+   "android.media.IEffect",
+-- 
+2.17.1
+
