@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Wed, 1 Sep 2021 00:59:09 +0300
+Subject: [PATCH] (halium) init.rc: binderfs should be mounted by host
+
+This is needed to share same binderfs instance and binder devices
+between host/LXC container.
+
+Change-Id: Ib4bacb8a00bdd70dcd99c1521af59b43148adf5c
+---
+ rootdir/init.rc | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index cc1b092..df082ae 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -178,8 +178,9 @@ on init
+     chown system package_info /config/sdcardfs
+ 
+     # Mount binderfs
+-    mkdir /dev/binderfs
+-    mount binder binder /dev/binderfs stats=global
++    # Halium: binderfs should be mounted by host
++    # mkdir /dev/binderfs
++    # mount binder binder /dev/binderfs stats=global
+     chmod 0755 /dev/binderfs
+ 
+     # Mount fusectl
+-- 
+2.33.0
+
