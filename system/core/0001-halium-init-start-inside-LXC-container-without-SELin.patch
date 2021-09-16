@@ -10,13 +10,13 @@ Signed-off-by: Alexander Martinz <alex@amartinz.at>
 Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
 ---
  init/Android.bp           |  2 ++
- init/first_stage_init.cpp | 49 ++++++++++++++++++++++++++++++---------
- init/init.cpp             | 10 +++++---
- init/property_service.cpp | 24 ++++++++++++-------
- init/service.cpp          | 10 ++++----
+ init/first_stage_init.cpp | 47 +++++++++++++++++++++++++++++----------
+ init/init.cpp             | 10 ++++++---
+ init/property_service.cpp | 24 ++++++++++++--------
+ init/service.cpp          | 10 +++++----
  init/subcontext.cpp       |  3 ++-
- init/util.cpp             | 18 ++++++++------
- 7 files changed, 81 insertions(+), 35 deletions(-)
+ init/util.cpp             | 18 +++++++++------
+ 7 files changed, 78 insertions(+), 36 deletions(-)
 
 diff --git a/init/Android.bp b/init/Android.bp
 index f292d689f..711d73735 100644
@@ -100,7 +100,17 @@ index 021557697..139768b63 100644
  
      // These below mounts are done in first stage init so that first stage mount can mount
      // subdirectories of /mnt/{vendor,product}/.  Other mounts, not required by first stage mount,
-@@ -299,7 +317,8 @@ int FirstStageMain(int argc, char** argv) {
+@@ -246,7 +264,8 @@ int FirstStageMain(int argc, char** argv) {
+         for (const auto& [error_string, error_errno] : errors) {
+             LOG(ERROR) << error_string << " " << strerror(error_errno);
+         }
+-        LOG(FATAL) << "Init encountered errors starting first stage, aborting";
++        // Halium: log errors but do not abort
++        // LOG(FATAL) << "Init encountered errors starting first stage, aborting";
+     }
+ 
+     LOG(INFO) << "init first stage started!";
+@@ -299,7 +318,8 @@ int FirstStageMain(int argc, char** argv) {
          }
      }
  
@@ -110,21 +120,16 @@ index 021557697..139768b63 100644
          LOG(FATAL) << "Failed to mount required partitions early ...";
      }
  
-@@ -318,8 +337,16 @@ int FirstStageMain(int argc, char** argv) {
+@@ -318,8 +338,11 @@ int FirstStageMain(int argc, char** argv) {
      setenv(kEnvFirstStageStartedAt, std::to_string(start_time.time_since_epoch().count()).c_str(),
             1);
  
 +
      const char* path = "/system/bin/init";
 -    const char* args[] = {path, "selinux_setup", nullptr};
-+    // Anbox: skip selinux_setup
-+    const char* next_stage;
-+    if (is_recovery) {
-+        next_stage = "selinux_setup";
-+    } else {
-+        next_stage = "second_stage";
-+    }
-+    const char* args[] = {path, next_stage, nullptr};
++    // Halium: skip selinux_setup
++    // const char* args[] = {path, "selinux_setup", nullptr};
++    const char* args[] = {path, "second_stage", nullptr};
      auto fd = open("/dev/kmsg", O_WRONLY | O_CLOEXEC);
      dup2(fd, STDOUT_FILENO);
      dup2(fd, STDERR_FILENO);
