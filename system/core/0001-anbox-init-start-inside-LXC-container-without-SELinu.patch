@@ -10,13 +10,13 @@ Change-Id: I1d4181f07b662f513db621a66f78348295a3862a
 Signed-off-by: Alexander Martinz <alex@amartinz.at>
 ---
  init/Android.bp           |  2 ++
- init/first_stage_init.cpp | 47 ++++++++++++++++++++++++++++++---------
- init/init.cpp             | 14 +++++++-----
- init/property_service.cpp | 24 ++++++++++++--------
+ init/first_stage_init.cpp | 44 ++++++++++++++++++++++++++++-----------
+ init/init.cpp             | 14 ++++++++-----
+ init/property_service.cpp | 24 +++++++++++++--------
  init/service.cpp          | 10 +++++----
  init/subcontext.cpp       |  5 +++--
- init/util.cpp             | 18 +++++++++------
- 7 files changed, 82 insertions(+), 38 deletions(-)
+ init/util.cpp             | 18 +++++++++-------
+ 7 files changed, 78 insertions(+), 39 deletions(-)
 
 diff --git a/init/Android.bp b/init/Android.bp
 index 377a3740c..9dda6897f 100644
@@ -39,7 +39,7 @@ index 377a3740c..9dda6897f 100644
      ],
      static_libs: [
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index 2b899408a..6b86e12f7 100644
+index 2b899408a..7d2234a80 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
 @@ -117,19 +117,31 @@ int FirstStageMain(int argc, char** argv) {
@@ -97,7 +97,17 @@ index 2b899408a..6b86e12f7 100644
  
      // These below mounts are done in first stage init so that first stage mount can mount
      // subdirectories of /mnt/{vendor,product}/.  Other mounts, not required by first stage mount,
-@@ -215,7 +232,8 @@ int FirstStageMain(int argc, char** argv) {
+@@ -176,7 +193,8 @@ int FirstStageMain(int argc, char** argv) {
+         for (const auto& [error_string, error_errno] : errors) {
+             LOG(ERROR) << error_string << " " << strerror(error_errno);
+         }
+-        LOG(FATAL) << "Init encountered errors starting first stage, aborting";
++        // Halium: log errors but do not abort
++        // LOG(FATAL) << "Init encountered errors starting first stage, aborting";
+     }
+ 
+     LOG(INFO) << "init first stage started!";
+@@ -215,7 +233,8 @@ int FirstStageMain(int argc, char** argv) {
          }
      }
  
@@ -107,19 +117,13 @@ index 2b899408a..6b86e12f7 100644
          LOG(FATAL) << "Failed to mount required partitions early ...";
      }
  
-@@ -236,7 +254,14 @@ int FirstStageMain(int argc, char** argv) {
+@@ -236,7 +255,8 @@ int FirstStageMain(int argc, char** argv) {
      setenv("INIT_STARTED_AT", std::to_string(start_ms).c_str(), 1);
  
      const char* path = "/system/bin/init";
 -    const char* args[] = {path, "selinux_setup", nullptr};
 +    // Anbox: skip selinux_setup
-+    const char* next_stage;
-+    if (is_recovery) {
-+        next_stage = "selinux_setup";
-+    } else {
-+        next_stage = "second_stage";
-+    }
-+    const char* args[] = {path, next_stage, nullptr};
++    const char* args[] = {path, "second_stage", nullptr};
      execv(path, const_cast<char**>(args));
  
      // execv() only returns if an error happened, in which case we
