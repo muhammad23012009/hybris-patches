@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 3 Oct 2021 12:38:06 +0300
+Subject: [PATCH] (halium) disable fdsan as it interferes with libhybris
+
+Might be not needed once libhybris hooks the relevant functions.
+
+Change-Id: If018e4b6bf09c72f1216f4945d6246831997e683
+---
+ libc/bionic/fdsan.cpp | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/libc/bionic/fdsan.cpp b/libc/bionic/fdsan.cpp
+index 4b8991872..5fa83c0e9 100644
+--- a/libc/bionic/fdsan.cpp
++++ b/libc/bionic/fdsan.cpp
+@@ -126,7 +126,9 @@ static FdEntry* GetFdEntry(int fd) {
+     return nullptr;
+   }
+ 
+-  return GetFdTable().at(fd);
++  // Disabled in Halium for now
++  // return GetFdTable().at(fd);
++  return nullptr;
+ }
+ 
+ __printflike(1, 0) static void fdsan_error(const char* fmt, ...) {
+@@ -250,11 +252,11 @@ int android_fdsan_close_with_tag(int fd, uint64_t expected_tag) {
+     return __close(fd);
+   }
+ 
+-  FDTRACK_CLOSE(fd);
+   FdEntry* fde = GetFdEntry(fd);
+   if (!fde) {
+     return __close(fd);
+   }
++  FDTRACK_CLOSE(fd);
+ 
+   uint64_t tag = expected_tag;
+   if (!atomic_compare_exchange_strong(&fde->close_tag, &tag, 0)) {
+-- 
+2.33.0
+
