@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sun, 3 Oct 2021 01:04:26 +0300
+Subject: [PATCH] (halium) ueventd: restore /dev/.coldboot_done creation
+
+Change-Id: Ib117d2eab23cc7407a638320385930458cc008c9
+---
+ init/ueventd.cpp | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/init/ueventd.cpp b/init/ueventd.cpp
+index 12aee62..974d166 100644
+--- a/init/ueventd.cpp
++++ b/init/ueventd.cpp
+@@ -241,6 +241,8 @@ void ColdBoot::WaitForSubProcesses() {
+     }
+ }
+ 
++#define COLDBOOT_DONE "/dev/.coldboot_done"
++
+ void ColdBoot::Run() {
+     android::base::Timer cold_boot_timer;
+ 
+@@ -263,6 +265,10 @@ void ColdBoot::Run() {
+     WaitForSubProcesses();
+ 
+     android::base::SetProperty(kColdBootDoneProp, "true");
++
++    // Halium: create old /dev/.coldboot_done as well since it's relied on by scripts
++    close(open(COLDBOOT_DONE, O_WRONLY | O_CREAT | O_CLOEXEC, 0000));
++
+     LOG(INFO) << "Coldboot took " << cold_boot_timer.duration().count() / 1000.0f << " seconds";
+ }
+ 
+-- 
+2.33.0
+
