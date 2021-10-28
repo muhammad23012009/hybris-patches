@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Thu, 28 Oct 2021 13:24:54 +0000
+Subject: [PATCH] (halium) change mediaserver multilib to first
+
+Needed to compile 64-bit libmedia_compat_layer
+
+Change-Id: I97c5767bc28d74f40ebecc57f1b58cbb2686041d
+---
+ media/mediaserver/Android.bp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/mediaserver/Android.bp b/media/mediaserver/Android.bp
+index 1759ff6..405602b 100644
+--- a/media/mediaserver/Android.bp
++++ b/media/mediaserver/Android.bp
+@@ -38,7 +38,7 @@ cc_binary {
+     ],
+ 
+     // back to 32-bit, b/126502613
+-    compile_multilib: "32",
++    compile_multilib: "first",
+ 
+     init_rc: ["mediaserver.rc"],
+ 
+-- 
+2.25.1
+
