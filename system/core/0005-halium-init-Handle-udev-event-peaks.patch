@@ -16,7 +16,7 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/rootdir/ueventd.rc b/rootdir/ueventd.rc
-index 9c2cdf27f..1c50fbc86 100644
+index 9c2cdf2..1c50fbc 100644
 --- a/rootdir/ueventd.rc
 +++ b/rootdir/ueventd.rc
 @@ -1,5 +1,5 @@
@@ -27,5 +27,5 @@ index 9c2cdf27f..1c50fbc86 100644
  subsystem graphics
      devname uevent_devpath
 -- 
-2.31.1
+2.33.0
 

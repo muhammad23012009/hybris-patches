@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Asriel Dreemurr <asriel.danctnix@gmail.com>
+Date: Wed, 11 Nov 2020 08:08:51 +0700
+Subject: [PATCH] (halium) init: modify mount_all to skip mounts and trigger
+ nonencrypted state
+
+Change-Id: Iae8cffa6aeb2d56f35a51f0e9f52fd92402c43e9
+---
+ init/builtins.cpp | 5 ++++-
+ rootdir/init.rc   | 4 ++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/init/builtins.cpp b/init/builtins.cpp
+index 7893166..a4b5d50 100644
+--- a/init/builtins.cpp
++++ b/init/builtins.cpp
+@@ -666,13 +666,16 @@ static Result<void> do_mount_all(const BuiltinArguments& args) {
+         }
+     }
+ 
+-    auto mount_fstab_result = fs_mgr_mount_all(&fstab, mount_all->mode);
++    /*auto mount_fstab_result = fs_mgr_mount_all(&fstab, mount_all->mode);*/
+     SetProperty(prop_name, std::to_string(t.duration().count()));
+ 
+     if (mount_all->import_rc) {
+         import_late(mount_all->rc_paths);
+     }
+ 
++    // Halium: filesystem mount is handled outside container, always non-encrypted
++    MountAllResult mount_fstab_result = {FS_MGR_MNTALL_DEV_NOT_ENCRYPTED, true};
++
+     if (mount_fstab_result.userdata_mounted) {
+         // This call to fs_mgr_mount_all mounted userdata. Keep the result in
+         // order for userspace reboot to correctly remount userdata.
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index a9af0b0..96ee56d 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -448,6 +448,10 @@ on late-init
+     trigger early-boot
+     trigger boot
+ 
++on fs
++    # Do fake mount_all for Halium
++    mount_all /dev/null
++
+ on early-fs
+     # Once metadata has been mounted, we'll need vold to deal with userdata checkpointing
+     start vold
+-- 
+2.33.0
+
