@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Sat, 13 Nov 2021 13:46:57 +0200
+Subject: [PATCH] (halium) init: ignore mount command for /dev/usb-ffs/adb
+
+This use may conflict with host system if that tries to use adbd and
+we do not run adbd inside the Halium container.
+
+Change-Id: Ia2e19b9aec2308df038d8041932398e6eacd9e12
+---
+ init/builtins.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/init/builtins.cpp b/init/builtins.cpp
+index c1da6c27e..c1adc3457 100644
+--- a/init/builtins.cpp
++++ b/init/builtins.cpp
+@@ -426,6 +426,11 @@ static Result<Success> do_mount(const BuiltinArguments& args) {
+     const char* source = args[2].c_str();
+     const char* target = args[3].c_str();
+ 
++    if (!IsRecoveryMode() && android::base::StartsWith(target, "/dev/usb-ffs/adb")) {
++        // Halium: adb functionfs is handled by host system
++        return Success();
++    }
++
+     if (android::base::StartsWith(source, "loop@")) {
+         int mode = (flags & MS_RDONLY) ? O_RDONLY : O_RDWR;
+         unique_fd fd(TEMP_FAILURE_RETRY(open(source + 5, mode | O_CLOEXEC)));
+-- 
+2.33.0
+
