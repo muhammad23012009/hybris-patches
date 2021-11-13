@@ -8,9 +8,9 @@ Signed-off-by: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
 Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
 (cherry picked from commit 00a0316b7d4d82437d733479fe7a0890a8f28fe7)
 ---
- cmds/servicemanager/ServiceManager.cpp |  5 +++--
- libs/binder/IServiceManager.cpp        | 11 ++++++++++-
- 2 files changed, 13 insertions(+), 3 deletions(-)
+ cmds/servicemanager/ServiceManager.cpp | 5 +++--
+ libs/binder/IServiceManager.cpp        | 4 ++++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
 index e80c3210f..0836b2e78 100644
@@ -30,18 +30,10 @@ index e80c3210f..0836b2e78 100644
      if (!mAccess->canAdd(ctx, name)) {
          return Status::fromExceptionCode(Status::EX_SECURITY);
 diff --git a/libs/binder/IServiceManager.cpp b/libs/binder/IServiceManager.cpp
-index a9f2d7395..5030cbb3f 100644
+index 218970a1b..5b162080c 100644
 --- a/libs/binder/IServiceManager.cpp
 +++ b/libs/binder/IServiceManager.cpp
-@@ -34,6 +34,7 @@
- #include <cutils/properties.h>
- #endif
- 
-+
- #include "Static.h"
- 
- #include <unistd.h>
-@@ -131,6 +132,8 @@ static String16 _permission("permission");
+@@ -131,6 +131,8 @@ static String16 _permission("permission");
  
  bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t* outUid)
  {
@@ -50,7 +42,7 @@ index a9f2d7395..5030cbb3f 100644
      IPCThreadState* ipcState = IPCThreadState::self();
      pid_t pid = ipcState->getCallingPid();
      uid_t uid = ipcState->getCallingUid();
-@@ -141,6 +144,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
+@@ -141,6 +143,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
  
  bool checkPermission(const String16& permission, pid_t pid, uid_t uid)
  {
@@ -59,45 +51,6 @@ index a9f2d7395..5030cbb3f 100644
      static Mutex gPermissionControllerLock;
      static sp<IPermissionController> gPermissionController;
  
-@@ -206,6 +211,7 @@ ServiceManagerShim::ServiceManagerShim(const sp<AidlServiceManager>& impl)
-  : mTheRealServiceManager(impl)
- {}
- 
-+
- sp<IBinder> ServiceManagerShim::getService(const String16& name) const
- {
-     static bool gSystemBootCompleted = false;
-@@ -216,6 +222,7 @@ sp<IBinder> ServiceManagerShim::getService(const String16& name) const
-     const bool isVendorService =
-         strcmp(ProcessState::self()->getDriverName().c_str(), "/dev/vndbinder") == 0;
-     const long timeout = uptimeMillis() + 5000;
-+
-     // Vendor code can't access system properties
-     if (!gSystemBootCompleted && !isVendorService) {
- #ifdef __ANDROID__
-@@ -258,6 +265,7 @@ status_t ServiceManagerShim::addService(const String16& name, const sp<IBinder>&
-     Status status = mTheRealServiceManager->addService(
-         String8(name).c_str(), service, allowIsolated, dumpsysPriority);
-     return status.exceptionCode();
-+
- }
- 
- Vector<String16> ServiceManagerShim::listServices(int dumpsysPriority)
-@@ -271,6 +279,7 @@ Vector<String16> ServiceManagerShim::listServices(int dumpsysPriority)
-     res.setCapacity(ret.size());
-     for (const std::string& name : ret) {
-         res.push(String16(name.c_str()));
-+
-     }
-     return res;
- }
-@@ -356,4 +365,4 @@ bool ServiceManagerShim::isDeclared(const String16& name) {
-     return declared;
- }
- 
--} // namespace android
-+} // namespace android
-\ No newline at end of file
 -- 
-2.31.1
+2.33.0
 
