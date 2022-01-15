@@ -1,0 +1,32 @@
+From 2417d285c90af0eabb22df337ee1ef441ba704c8 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Sun, 12 Dec 2021 17:24:57 +0100
+Subject: [PATCH] (halium) init.rc: Create directory for trust-store socket
+
+This enables the minimediaservice process to create the socket
+in a well-known location for consumption by trust-store.
+
+Change-Id: Iac114c1b0d92afb54d39ad314c6b521d6c088dc1
+---
+ rootdir/init.rc | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 998b05f..91495e4 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -263,6 +263,11 @@ on init
+     # that they can be chown'd to system:system later on boot
+     write /sys/class/leds/vibrator/trigger "transient"
+ 
++    # Create directory necessary for the CameraService trust-store socket
++    mkdir /dev/socket/camera_service
++    chown root camera /dev/socket/camera_service
++    chmod 0775 /dev/socket/camera_service
++
+ # Healthd can trigger a full boot from charger mode by signaling this
+ # property when the power button is held.
+ on property:sys.boot_from_charger_mode=1
+-- 
+2.30.1 (Apple Git-130)
+
