@@ -1,0 +1,52 @@
+From 3b05598fbc49f1e45ee8287266111dc3e6705b2a Mon Sep 17 00:00:00 2001
+From: Alexander Martinz <amartinz@shiftphones.com>
+Date: Wed, 26 Jan 2022 14:01:26 +0100
+Subject: [PATCH] (halium) init: property_service: introduce /data/halium.prop
+
+Always load properties from /data/halium.prop to allow specifying
+properties needed by halium.
+
+Note: on debuggable system images the values of /data/local.prop
+get loaded before /data/halium.prop.
+
+Change-Id: Ic473bb83697c5e511fbf666a65edaa93fcd479e6
+Signed-off-by: Alexander Martinz <amartinz@shiftphones.com>
+---
+ init/property_service.cpp | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index 65e9cda1cc..d7140d61a5 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -788,6 +788,18 @@ static void load_override_properties() {
+     }
+ }
+ 
++static void load_halium_properties() {
++    std::map<std::string, std::string> properties;
++    load_properties_from_file("/data/halium.prop", nullptr, &properties);
++    for (const auto& [name, value] : properties) {
++        std::string error;
++        if (PropertySet(name, value, &error) != PROP_SUCCESS) {
++            LOG(ERROR) << "Could not set '" << name << "' to '" << value
++                       << "' in /data/halium.prop: " << error;
++        }
++    }
++}
++
+ // If the ro.product.[brand|device|manufacturer|model|name] properties have not been explicitly
+ // set, derive them from ro.product.${partition}.* properties
+ static void property_initialize_ro_product_props() {
+@@ -1027,6 +1039,8 @@ static void HandleInitSocket() {
+     switch (init_message.msg_case()) {
+         case InitMessage::kLoadPersistentProperties: {
+             load_override_properties();
++            load_halium_properties();
++
+             // Read persistent properties after all default values have been loaded.
+             auto persistent_properties = LoadPersistentProperties();
+             for (const auto& persistent_property_record : persistent_properties.properties()) {
+-- 
+2.35.0.rc2
+
