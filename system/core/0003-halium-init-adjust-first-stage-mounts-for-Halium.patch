@@ -8,7 +8,8 @@ Signed-off-by: Alexander Martinz <alex@amartinz.at>
 Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
 ---
  init/first_stage_init.cpp | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ init/init.cpp             |  7 +++++--
+ 2 files changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
 index 139768b63..4378000f4 100644
@@ -45,6 +46,24 @@ index 139768b63..4378000f4 100644
  
      // /debug_ramdisk is used to preserve additional files from the debug ramdisk
      CHECKCALL(mount("tmpfs", "/debug_ramdisk", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
+diff --git a/init/init.cpp b/init/init.cpp
+index 2c6eda81d..ada8adf8a 100644
+--- a/init/init.cpp
++++ b/init/init.cpp
+@@ -644,8 +644,11 @@ static void MountExtraFilesystems() {
+     if ((x) != 0) PLOG(FATAL) << #x " failed.";
+ 
+     // /apex is used to mount APEXes
+-    CHECKCALL(mount("tmpfs", "/apex", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
+-                    "mode=0755,uid=0,gid=0"));
++    // Disabled for Halium
++    if (IsRecoveryMode()) {
++        CHECKCALL(mount("tmpfs", "/apex", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
++                        "mode=0755,uid=0,gid=0"));
++    }
+ 
+     // /linkerconfig is used to keep generated linker configuration
+     CHECKCALL(mount("tmpfs", "/linkerconfig", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
 -- 
 2.33.0
 
