@@ -4,25 +4,17 @@ Date: Sat, 19 Dec 2020 21:39:09 +0200
 Subject: [PATCH] (halium) init: adjust first stage mounts for Halium
 
 Change-Id: I575e5f1072e69ffec9eea9adf96988f37f393018
+Signed-off-by: Alexander Martinz <alex@amartinz.at>
+Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
 ---
- init/first_stage_init.cpp | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ init/first_stage_init.cpp | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index 1b5bdb4..1a9036e 100644
+index 139768b63..4378000f4 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -193,7 +193,8 @@ int FirstStageMain(int argc, char** argv) {
-     // Disabled for Anbox, mounted by host system instead
-     //CHECKCALL(mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755"));
-     //CHECKCALL(mkdir("/dev/pts", 0755));
--    CHECKCALL(mkdir("/dev/socket", 0755));
-+    //CHECKCALL(mkdir("/dev/socket", 0755));
-+    mkdir("/dev/socket", 0755);
-     //CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
- #define MAKE_STR(x) __STRING(x)
-     //CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
-@@ -229,14 +230,18 @@ int FirstStageMain(int argc, char** argv) {
+@@ -241,14 +241,26 @@ int FirstStageMain(int argc, char** argv) {
      // should be done in rc files.
      // Mount staging areas for devices managed by vold
      // See storage config details at http://source.android.com/devices/storage/
@@ -30,18 +22,26 @@ index 1b5bdb4..1a9036e 100644
 -                    "mode=0755,uid=0,gid=1000"));
 +
 +    // Disabled for Halium, mounted by LXC config
-+    //CHECKCALL(mount("tmpfs", "/mnt", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
-+    //                "mode=0755,uid=0,gid=1000"));
++    if (is_recovery) {
++        CHECKCALL(mount("tmpfs", "/mnt", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
++                        "mode=0755,uid=0,gid=1000"));
++    }
      // /mnt/vendor is used to mount vendor-specific partitions that can not be
      // part of the vendor partition, e.g. because they are mounted read-write.
 -    CHECKCALL(mkdir("/mnt/vendor", 0755));
-+    //CHECKCALL(mkdir("/mnt/vendor", 0755));
-+    mkdir("/mnt/vendor", 0755);
++    if (is_recovery) {
++        CHECKCALL(mkdir("/mnt/vendor", 0755));
++    } else {
++        mkdir("/mnt/vendor", 0755);
++    }
      // /mnt/product is used to mount product-specific partitions that can not be
      // part of the product partition, e.g. because they are mounted read-write.
 -    CHECKCALL(mkdir("/mnt/product", 0755));
-+    //CHECKCALL(mkdir("/mnt/product", 0755));
-+    mkdir("/mnt/product", 0755);
++    if (is_recovery) {
++        CHECKCALL(mkdir("/mnt/product", 0755));
++    } else {
++        mkdir("/mnt/product", 0755);
++   }
  
      // /debug_ramdisk is used to preserve additional files from the debug ramdisk
      CHECKCALL(mount("tmpfs", "/debug_ramdisk", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
