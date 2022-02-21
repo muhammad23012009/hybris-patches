@@ -1,0 +1,35 @@
+From 81609566838cd79715c8247bffac428b9611ed28 Mon Sep 17 00:00:00 2001
+From: Florian Leeber <florian@ubports.com>
+Date: Thu, 3 Feb 2022 21:53:27 +0100
+Subject: [PATCH] (halium) Fixup path in case cpusets are written
+
+Change-Id: I00f9e0736a88c8ad63997ca4435c25369a6fefe3
+---
+ init/util.cpp | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/init/util.cpp b/init/util.cpp
+index a5c95df..0b4d712 100644
+--- a/init/util.cpp
++++ b/init/util.cpp
+@@ -211,8 +211,16 @@ static int OpenFile(const std::string& path, int flags, mode_t mode) {
+ }
+ 
+ Result<Success> WriteFile(const std::string& path, const std::string& content) {
++
++    // Ubuntu Touch: Fixup path in case cpusets are written
++    std::string realPath = path;
++    if (path.find("/dev/cpuset/") != std::string::npos) {
++        auto lastDelimPos = path.find_last_of('/');
++        realPath = path.substr(0, lastDelimPos + 1) + "cpuset." + path.substr(lastDelimPos + 1);
++    }
++
+     android::base::unique_fd fd(TEMP_FAILURE_RETRY(
+-        OpenFile(path, O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC | O_CLOEXEC, 0600)));
++        OpenFile(realPath, O_WRONLY | O_CREAT | O_NOFOLLOW | O_TRUNC | O_CLOEXEC, 0600)));
+     if (fd == -1) {
+         return ErrnoError() << "open() failed";
+     }
+-- 
+2.17.1
+
