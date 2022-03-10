@@ -1,0 +1,30 @@
+From e21f1f5a4e7ecdadd2cf6c6e230b0153be8adc6c Mon Sep 17 00:00:00 2001
+From: Alexander Martinz <amartinz@shiftphones.com>
+Date: Wed, 9 Mar 2022 13:30:51 +0100
+Subject: [PATCH] (halium) adb: disable auth requirement for recovery by
+ default
+
+Our installer expects the recovery to have full adb access by default.
+
+Change-Id: I40a664981bcfcabca86071f643d2df4a421609ad
+Signed-off-by: Alexander Martinz <amartinz@shiftphones.com>
+---
+ adb/daemon/main.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/adb/daemon/main.cpp b/adb/daemon/main.cpp
+index 8521b5fbea..319120cfe0 100644
+--- a/adb/daemon/main.cpp
++++ b/adb/daemon/main.cpp
+@@ -196,7 +196,7 @@ int adbd_main(int server_port) {
+         auth_required = android::base::GetBoolProperty("ro.adb.secure", false);
+ #if defined(__ANDROID_RECOVERY__)
+         auth_required = auth_required &&
+-                        android::base::GetBoolProperty("ro.adb.secure.recovery", true);
++                        android::base::GetBoolProperty("ro.adb.secure.recovery", false);
+ #endif
+     }
+ #endif
+-- 
+2.35.1
+
