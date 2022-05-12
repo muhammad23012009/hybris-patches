@@ -1,0 +1,35 @@
+From a9e79602efabfd678dd9a397f4a6af67580aea4a Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:08:42 +0200
+Subject: [PATCH] libselinux: Avoid compiling sestatus.c on macOS
+
+It's not of any use on the build machine regardless of OS.
+
+Change-Id: I7e32c6cccfa7c3b9972a13511aa24262c7362fff
+---
+ libselinux/Android.bp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libselinux/Android.bp b/libselinux/Android.bp
+index 268fc74..6833cba 100644
+--- a/libselinux/Android.bp
++++ b/libselinux/Android.bp
+@@ -29,7 +29,6 @@ cc_defaults {
+         "src/label.c",
+         "src/label_support.c",
+         "src/matchpathcon.c",
+-        "src/sestatus.c",
+         "src/setrans_client.c",
+         "src/sha1.c",
+     ],
+@@ -71,6 +70,7 @@ cc_defaults {
+                 "src/policyvers.c",
+                 "src/procattr.c",
+                 "src/reject_unknown.c",
++                "src/sestatus.c",
+                 "src/setenforce.c",
+                 "src/setfilecon.c",
+                 "src/stringrep.c",
+-- 
+2.32.0 (Apple Git-132)
+

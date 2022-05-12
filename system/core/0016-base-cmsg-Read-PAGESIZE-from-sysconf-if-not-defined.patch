@@ -1,0 +1,30 @@
+From 0a7e695ccf36666285fd0249400d8a09abd3e414 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:14:00 +0200
+Subject: [PATCH] base/cmsg: Read PAGESIZE from sysconf if not defined
+
+As is the case on macOS.
+
+Change-Id: I399c338905651f36efd9089dd1c8728362821b52
+---
+ base/cmsg.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/base/cmsg.cpp b/base/cmsg.cpp
+index 42866f8..0dca7fe 100644
+--- a/base/cmsg.cpp
++++ b/base/cmsg.cpp
+@@ -26,6 +26,10 @@
+ 
+ #include <android-base/logging.h>
+ 
++#ifndef PAGE_SIZE
++#define PAGE_SIZE (size_t)(sysconf(_SC_PAGESIZE))
++#endif
++
+ namespace android {
+ namespace base {
+ 
+-- 
+2.32.0 (Apple Git-132)
+

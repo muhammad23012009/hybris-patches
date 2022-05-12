@@ -1,0 +1,32 @@
+From 8d752b27d6341cd908fa37412783ab53317115e0 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:00:58 +0200
+Subject: [PATCH] build_image: Use GNU coreutils on macOS
+
+Get the size of the to-be-imaged system directory using 'gdu'.
+
+Change-Id: Ib0ceded2b2fae846ef2e7428fd35eda495fc5c7c
+---
+ tools/releasetools/build_image.py | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/tools/releasetools/build_image.py b/tools/releasetools/build_image.py
+index d8a65d2..597112b 100755
+--- a/tools/releasetools/build_image.py
++++ b/tools/releasetools/build_image.py
+@@ -57,7 +57,11 @@ def GetDiskUsage(path):
+   Returns:
+     The number of bytes based on a 1K block_size.
+   """
+-  cmd = ["du", "-b", "-k", "-s", path]
++  kernel = os.uname()[0]
++  if kernel is "Linux":
++    cmd = ["du", "-b", "-k", "-s", path]
++  else:
++    cmd = ["gdu", "-b", "-k", "-s", path]
+   output = common.RunAndCheckOutput(cmd, verbose=False)
+   return int(output.split()[0]) * 1024
+ 
+-- 
+2.32.0 (Apple Git-132)
+

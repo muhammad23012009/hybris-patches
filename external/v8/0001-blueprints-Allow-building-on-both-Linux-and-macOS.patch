@@ -1,0 +1,72 @@
+From 85255b502becdfc6ad433afff44f6c0929ebc1eb Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:10:40 +0200
+Subject: [PATCH] blueprints: Allow building on both Linux and macOS
+
+The host portion of v8 needs to be able to distinguish
+between platform code of macOS and Linux, so do just that.
+
+Change-Id: I69a9ca2fb213ee2e23297d2b282a05670e82579b
+---
+ Android.bp         | 12 ++++++++++--
+ Android.libbase.bp |  9 ++++++++-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 3cec564..b7d9751 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -174,7 +174,11 @@ cc_defaults {
+ cc_binary_host {
+     name: "v8_bytecode_builtins_list_generator",
+     defaults: ["v8_defaults"],
+-    host_ldlibs: ["-lrt"],
++    target: {
++        linux: {
++            host_ldlibs: ["-lrt"],
++        },
++    },
+     srcs: [
+         "src/builtins/generate-bytecodes-builtins-list.cc",
+         "src/interpreter/bytecode-operands.cc",
+@@ -202,7 +206,11 @@ cc_binary_host {
+         "-fexceptions",
+         "-frtti",
+     ],
+-    host_ldlibs: ["-lrt"],
++    target: {
++        linux: {
++            host_ldlibs: ["-lrt"],
++        },
++    },
+     srcs: [
+         "src/torque/cc-generator.cc",
+         "src/torque/cfg.cc",
+diff --git a/Android.libbase.bp b/Android.libbase.bp
+index 63de80e..cbabdbc 100644
+--- a/Android.libbase.bp
++++ b/Android.libbase.bp
+@@ -36,12 +36,19 @@ cc_library_static {
+                 "src/base/platform/platform-linux.cc",
+             ],
+         },
+-        host: {
++        linux_glibc: {
+             srcs: [
+                 "src/base/debug/stack_trace_posix.cc",
+                 "src/base/platform/platform-linux.cc",
+             ],
+             cflags: ["-UANDROID"],
+         },
++        darwin: {
++            srcs: [
++                "src/base/debug/stack_trace_posix.cc",
++                "src/base/platform/platform-macos.cc",
++            ],
++            cflags: ["-UANDROID"],
++        },
+     },
+ }
+-- 
+2.32.0 (Apple Git-132)
+

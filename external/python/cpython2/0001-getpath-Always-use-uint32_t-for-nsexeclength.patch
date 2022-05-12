@@ -1,0 +1,33 @@
+From 3ea3b2ce6d3a16cd23229872f89a3349279e0624 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:06:17 +0200
+Subject: [PATCH] getpath: Always use uint32_t for nsexeclength
+
+Fixes building on recent macOS.
+
+Change-Id: I2640db17c9dc5bbf705588b5938620bb6c1e8eea
+---
+ Modules/getpath.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/Modules/getpath.c b/Modules/getpath.c
+index 27f3381..1e0162e 100644
+--- a/Modules/getpath.c
++++ b/Modules/getpath.c
+@@ -386,13 +386,8 @@ calculate_path(void)
+     NSModule pythonModule;
+ #endif
+ #ifdef __APPLE__
+-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
+     uint32_t nsexeclength = MAXPATHLEN;
+-#else
+-    unsigned long nsexeclength = MAXPATHLEN;
+-#endif
+ #endif
+-
+         /* If there is no slash in the argv0 path, then we have to
+          * assume python is on the user's $PATH, since there's no
+          * other way to find a directory to start the search from.  If
+-- 
+2.32.0 (Apple Git-132)
+
