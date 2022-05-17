@@ -1,0 +1,35 @@
+From a025a235687cce2d61d3f9c4ea17b3918b5da063 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Thu, 12 May 2022 22:04:35 +0200
+Subject: [PATCH] darwin_host: Add current and future macOS SDKs
+
+Allows building Halium with recent Xcode.
+
+Change-Id: Idd7c0915c863be3b1a94a1dfb6e06b3e8942086f
+---
+ cc/config/x86_darwin_host.go | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/cc/config/x86_darwin_host.go b/cc/config/x86_darwin_host.go
+index 2f2b515..dee03d4 100644
+--- a/cc/config/x86_darwin_host.go
++++ b/cc/config/x86_darwin_host.go
+@@ -65,6 +65,15 @@ var (
+ 		"10.14",
+ 		"10.15",
+ 		"11.0",
++		"12.1",
++		"12.2",
++		"12.3",
++		"12.4",
++		"13.0",
++		"13.1",
++		"13.2",
++		"13.3",
++		"13.4",
+ 	}
+ 
+ 	darwinAvailableLibraries = append(
+-- 
+2.32.0 (Apple Git-132)
+
