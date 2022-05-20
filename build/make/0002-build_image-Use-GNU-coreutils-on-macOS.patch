@@ -20,7 +20,7 @@ index d8a65d2..597112b 100755
    """
 -  cmd = ["du", "-b", "-k", "-s", path]
 +  kernel = os.uname()[0]
-+  if kernel is "Linux":
++  if kernel == "Linux":
 +    cmd = ["du", "-b", "-k", "-s", path]
 +  else:
 +    cmd = ["gdu", "-b", "-k", "-s", path]
