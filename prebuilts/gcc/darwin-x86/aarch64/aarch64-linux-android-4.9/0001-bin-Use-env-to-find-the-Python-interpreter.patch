@@ -1,0 +1,26 @@
+From 928c6d247e81ea1de64a407d06f797f33450b061 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Sat, 28 May 2022 23:04:31 +0200
+Subject: [PATCH] bin: Use env to find the Python interpreter
+
+Restore support on macOS to build kernels,
+since python2 has been removed from the install.
+
+Change-Id: I42aa41f43c6a7e52f1a40872224799320a140993
+---
+ bin/aarch64-linux-android-gcc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bin/aarch64-linux-android-gcc b/bin/aarch64-linux-android-gcc
+index 54944a2..b65b3eb 100755
+--- a/bin/aarch64-linux-android-gcc
++++ b/bin/aarch64-linux-android-gcc
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python
+ 
+ import os
+ import sys
+-- 
+2.32.1 (Apple Git-133)
+
