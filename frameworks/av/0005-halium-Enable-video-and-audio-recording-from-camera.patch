@@ -13,19 +13,19 @@ Change-Id: I9f0c80bf75c0ee713d27fe4460e409cef51cd4c2
  3 files changed, 72 insertions(+), 75 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index 44acbd805b..c5fd6af292 100644
+index b1f87fa993..a2a0818d75 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -375,7 +375,7 @@ status_t AudioRecord::set(
+@@ -392,7 +392,7 @@ status_t AudioRecord::set(
      mMarkerReached = false;
      mNewPosition = 0;
      mUpdatePeriod = 0;
--    AudioSystem::acquireAudioSessionId(mSessionId, mClientPid, mClientUid);
+-    AudioSystem::acquireAudioSessionId(mSessionId, adjPid, adjUid);
 +    // AudioSystem::acquireAudioSessionId(mSessionId, mClientPid, mClientUid);
      mSequence = 1;
      mObservedSequence = mSequence;
      mInOverrun = false;
-@@ -387,6 +387,8 @@ exit:
+@@ -404,6 +404,8 @@ exit:
      if (status != NO_ERROR) {
          mMediaMetrics.markError(status, __FUNCTION__);
      }
@@ -34,25 +34,26 @@ index 44acbd805b..c5fd6af292 100644
      return status;
  }
  
-@@ -443,6 +445,7 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
- 
+@@ -458,7 +460,7 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
+     mActive = true;
  
      if (!(flags & CBLK_INVALID)) {
+-        status = statusTFromBinderStatus(mAudioRecord->start(event, triggerSession));
 +        ALOGV("mAudioRecord->start()");
-         status = mAudioRecord->start(event, triggerSession).transactionError();
          if (status == DEAD_OBJECT) {
              flags |= CBLK_INVALID;
-@@ -738,8 +741,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+         }
+@@ -752,8 +754,7 @@ const char * AudioRecord::convertTransferToText(transfer_type transferType) {
+ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
  {
      const int64_t beginNs = systemTime();
- 
 -    IAudioFlinger::CreateRecordInput input;
 -    IAudioFlinger::CreateRecordOutput output;
 +
      audio_session_t originalSessionId;
-     sp<media::IAudioRecord> record;
      void *iMemPointer;
-@@ -785,29 +787,9 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+     audio_track_cblk_t* cblk;
+@@ -798,27 +799,9 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          }
      }
  
@@ -60,15 +61,13 @@ index 44acbd805b..c5fd6af292 100644
 -    input.config.sample_rate = mSampleRate;
 -    input.config.channel_mask = mChannelMask;
 -    input.config.format = mFormat;
--    input.clientInfo.clientUid = mClientUid;
--    input.clientInfo.clientPid = mClientPid;
+-    input.clientInfo.attributionSource = mClientAttributionSource;
 -    input.clientInfo.clientTid = -1;
 -    if (mFlags & AUDIO_INPUT_FLAG_FAST) {
 -        if (mAudioRecordThread != 0) {
 -            input.clientInfo.clientTid = mAudioRecordThread->getTid();
 -        }
 -    }
--    input.opPackageName = opPackageName;
 -    input.riid = mTracker->getRiid();
 +    // static audio_io_handle_t == 1
 +    audio_io_handle_t input = 1;
@@ -81,10 +80,10 @@ index 44acbd805b..c5fd6af292 100644
 -    input.selectedDeviceId = mSelectedDeviceId;
 -    input.sessionId = mSessionId;
 -    originalSessionId = mSessionId;
+     input.maxSharedAudioHistoryMs = mMaxSharedAudioHistoryMs;
  
      // Initialize the input reader RecordThread:
-     status = recordService->initRecord(mSampleRate, mFormat, mChannelMask);
-@@ -816,37 +798,38 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -828,37 +811,38 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          return status;
      }
  
@@ -119,7 +118,7 @@ index 44acbd805b..c5fd6af292 100644
          goto exit;
      }
  
--    ALOG_ASSERT(record != 0);
+-    ALOG_ASSERT(output.audioRecord != 0);
 +    record = recording.ar;
 +    iMem = recording.cblk;
 +    bufferMem = recording.buffers;
@@ -144,7 +143,7 @@ index 44acbd805b..c5fd6af292 100644
          ALOGE("%s(%d): Could not get control block", __func__, mPortId);
          status = NO_INIT;
          goto exit;
-@@ -855,7 +838,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -867,7 +851,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
      //       (see declaration for details).
      //       Either document why it is safe in this case or address the
      //       issue (e.g. by copying).
@@ -153,7 +152,7 @@ index 44acbd805b..c5fd6af292 100644
      if (iMemPointer == NULL) {
          ALOGE("%s(%d): Could not get control block pointer", __func__, mPortId);
          status = NO_INIT;
-@@ -867,14 +850,14 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -879,14 +863,14 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
      // The buffers are either immediately after the control block,
      // or in a separate area at discretion of server.
      void *buffers;
@@ -170,10 +169,10 @@ index 44acbd805b..c5fd6af292 100644
          if (buffers == NULL) {
              ALOGE("%s(%d): Could not get buffer pointer", __func__, mPortId);
              status = NO_INIT;
-@@ -888,41 +871,42 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
+@@ -900,45 +884,45 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          mDeathNotifier.clear();
      }
-     mAudioRecord = record;
+     mAudioRecord = output.audioRecord;
 -    mCblkMemory = output.cblk;
 -    mBufferMemory = output.buffers;
 +    mCblkMemory = iMem;
@@ -216,8 +215,12 @@ index 44acbd805b..c5fd6af292 100644
 +        AudioSystem::addAudioDeviceCallback(this, input, mPortId);
      }
  
--    mPortId = output.portId;
+-    if (!mSharedAudioPackageName.empty()) {
 +    mPortId = 0;
+         mAudioRecord->shareAudioHistory(mSharedAudioPackageName, mSharedAudioStartMs);
+     }
+ 
+-    mPortId = output.portId;
      // We retain a copy of the I/O handle, but don't own the reference
 -    mInput = output.inputId;
 +    mInput = input;
@@ -228,9 +231,9 @@ index 44acbd805b..c5fd6af292 100644
      // If IAudioRecord is re-created, don't let the requested frameCount
      // decrease.  This can confuse clients that cache frameCount().
      if (mFrameCount > mReqFrameCount) {
-@@ -947,7 +931,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch, const String
-         .set(AMEDIAMETRICS_PROP_SESSIONID, (int32_t)mSessionId)
+@@ -964,7 +948,7 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          .set(AMEDIAMETRICS_PROP_TRACKID, mPortId)
+         .set(AMEDIAMETRICS_PROP_LOGSESSIONID, mLogSessionId)
          .set(AMEDIAMETRICS_PROP_SOURCE, toString(mAttributes.source).c_str())
 -        .set(AMEDIAMETRICS_PROP_THREADID, (int32_t)output.inputId)
 +        .set(AMEDIAMETRICS_PROP_THREADID, (int32_t)input)
@@ -367,5 +370,5 @@ index 8a4e7f5858..eb544d1d62 100644
                                  audio_format_t format,
                                  audio_channel_mask_t channelMask,
 -- 
-2.31.1
+2.25.1
 

@@ -16,16 +16,19 @@ Change-Id: Iedc1b3b97e22e615e1480505bfb5e294aa08b263
  1 file changed, 3 insertions(+)
 
 diff --git a/core/Makefile b/core/Makefile
-index b418946..17b43f9 100644
+index e69b5af6f..0ab3cf3c9 100644
 --- a/core/Makefile
 +++ b/core/Makefile
-@@ -2255,6 +2255,9 @@ $(recovery_ramdisk): $(recovery_uncompressed_ramdisk) $(COMPRESSION_COMMAND_DEPS
+@@ -2267,6 +2267,9 @@ $(recovery_ramdisk): $(recovery_uncompressed_ramdisk) $(COMPRESSION_COMMAND_DEPS
  	@echo ----- Making compressed recovery ramdisk ------
  	$(COMPRESSION_COMMAND) < $(recovery_uncompressed_ramdisk) > $@
  
 +.PHONY: recoveryramdisk
 +recoveryramdisk: $(recovery_ramdisk)
 +
- 
  # $(1): output file
- # $(2): kernel file
+ # $(2): optional kernel file
+ define build-recoveryimage-target
+-- 
+2.25.1
+

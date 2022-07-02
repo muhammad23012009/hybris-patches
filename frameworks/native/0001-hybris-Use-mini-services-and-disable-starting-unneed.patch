@@ -6,27 +6,20 @@ Subject: [PATCH] (hybris) Use mini services and disable starting unneeded
 
 Change-Id: I6e80eb3e2d92ddfbd83f1933971c3f24e9570d28
 ---
- cmds/servicemanager/servicemanager.rc | 36 +++++++++++++++++++--------
- 1 file changed, 26 insertions(+), 10 deletions(-)
+ cmds/servicemanager/servicemanager.rc | 29 ++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
 diff --git a/cmds/servicemanager/servicemanager.rc b/cmds/servicemanager/servicemanager.rc
-index 152ac28ba..e154bd7dc 100644
+index 6d5070fa04..84dc28a693 100644
 --- a/cmds/servicemanager/servicemanager.rc
 +++ b/cmds/servicemanager/servicemanager.rc
-@@ -4,15 +4,31 @@ service servicemanager /system/bin/servicemanager
+@@ -4,10 +4,33 @@ service servicemanager /system/bin/servicemanager
      group system readproc
      critical
-     onrestart restart healthd
--    onrestart restart zygote
+     onrestart restart apexd
 -    onrestart restart audioserver
--    onrestart restart media
--    onrestart restart surfaceflinger
--    onrestart restart inputflinger
--    onrestart restart drm
--    onrestart restart cameraserver
--    onrestart restart keystore
 -    onrestart restart gatekeeperd
--    onrestart restart thermalservice
+-    onrestart class_restart main
 +    #onrestart restart zygote
 +    #onrestart restart audioserver
 +    #onrestart restart media
@@ -37,6 +30,8 @@ index 152ac28ba..e154bd7dc 100644
 +    #onrestart restart keystore
 +    #onrestart restart gatekeeperd
 +    #onrestart restart thermalservice
+     onrestart class_restart hal
+     onrestart class_restart early_hal
      writepid /dev/cpuset/system-background/tasks
      shutdown critical
 +
@@ -56,5 +51,5 @@ index 152ac28ba..e154bd7dc 100644
 +    user system
 +    group audio
 -- 
-2.31.1
+2.25.1
 

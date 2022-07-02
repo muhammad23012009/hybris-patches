@@ -11,10 +11,10 @@ Signed-off-by: Simonas Leleiva <simonas.leleiva@jollamobile.com>
  1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/opengl/libs/EGL/Loader.cpp b/opengl/libs/EGL/Loader.cpp
-index d66ef2b96..ac7c14721 100644
+index 65c3c49b1b..c1c3ca1b18 100644
 --- a/opengl/libs/EGL/Loader.cpp
 +++ b/opengl/libs/EGL/Loader.cpp
-@@ -134,9 +134,9 @@ static void* load_wrapper(const char* path) {
+@@ -130,9 +130,9 @@ static void* load_wrapper(const char* path) {
  
  #ifndef EGL_WRAPPER_DIR
  #if defined(__LP64__)
@@ -26,7 +26,7 @@ index d66ef2b96..ac7c14721 100644
  #endif
  #endif
  
-@@ -284,13 +284,13 @@ void* Loader::open(egl_connection_t* cnx)
+@@ -278,13 +278,13 @@ void* Loader::open(egl_connection_t* cnx)
                          HAL_SUBNAME_KEY_PROPERTIES[0], HAL_SUBNAME_KEY_PROPERTIES[1]);
  
      if (!cnx->libEgl) {
@@ -44,5 +44,5 @@ index d66ef2b96..ac7c14721 100644
  
      if (!cnx->libEgl || !cnx->libGles2 || !cnx->libGles1) {
 -- 
-2.31.1
+2.25.1
 

@@ -11,18 +11,18 @@ Change-Id: I97c5767bc28d74f40ebecc57f1b58cbb2686041d
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/media/mediaserver/Android.bp b/media/mediaserver/Android.bp
-index 1759ff6..405602b 100644
+index e25658f599..803690c79e 100644
 --- a/media/mediaserver/Android.bp
 +++ b/media/mediaserver/Android.bp
-@@ -38,7 +38,7 @@ cc_binary {
+@@ -53,7 +53,7 @@ cc_binary {
      ],
  
-     // back to 32-bit, b/126502613
--    compile_multilib: "32",
+     // By default mediaserver runs in 32-bit to save memory, except
+-    // on 64-bit-only lunch targets.
 +    compile_multilib: "first",
- 
-     init_rc: ["mediaserver.rc"],
- 
+     // ****************************************************************
+     // TO ENABLE 64-BIT MEDIASERVER ON MIXED 32/64-BIT DEVICES, COMMENT
+     // OUT THE FOLLOWING LINE:
 -- 
 2.25.1
 

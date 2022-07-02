@@ -12,10 +12,10 @@ Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
  2 files changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index 139768b63..4378000f4 100644
+index 44b8747a9..21bf6b778 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -241,14 +241,26 @@ int FirstStageMain(int argc, char** argv) {
+@@ -255,14 +255,26 @@ int FirstStageMain(int argc, char** argv) {
      // should be done in rc files.
      // Mount staging areas for devices managed by vold
      // See storage config details at http://source.android.com/devices/storage/
@@ -47,10 +47,10 @@ index 139768b63..4378000f4 100644
      // /debug_ramdisk is used to preserve additional files from the debug ramdisk
      CHECKCALL(mount("tmpfs", "/debug_ramdisk", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
 diff --git a/init/init.cpp b/init/init.cpp
-index 2c6eda81d..ada8adf8a 100644
+index 5646b69c2..7b714f925 100644
 --- a/init/init.cpp
 +++ b/init/init.cpp
-@@ -644,8 +644,11 @@ static void MountExtraFilesystems() {
+@@ -693,8 +693,11 @@ static void MountExtraFilesystems() {
      if ((x) != 0) PLOG(FATAL) << #x " failed.";
  
      // /apex is used to mount APEXes
@@ -65,5 +65,5 @@ index 2c6eda81d..ada8adf8a 100644
      // /linkerconfig is used to keep generated linker configuration
      CHECKCALL(mount("tmpfs", "/linkerconfig", "tmpfs", MS_NOEXEC | MS_NOSUID | MS_NODEV,
 -- 
-2.33.0
+2.25.1
 

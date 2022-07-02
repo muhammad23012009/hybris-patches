@@ -11,7 +11,7 @@ Change-Id: If018e4b6bf09c72f1216f4945d6246831997e683
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/libc/bionic/fdsan.cpp b/libc/bionic/fdsan.cpp
-index 4b8991872..5fa83c0e9 100644
+index 48e8674d6..ba6ffdb3c 100644
 --- a/libc/bionic/fdsan.cpp
 +++ b/libc/bionic/fdsan.cpp
 @@ -126,7 +126,9 @@ static FdEntry* GetFdEntry(int fd) {
@@ -25,7 +25,7 @@ index 4b8991872..5fa83c0e9 100644
  }
  
  __printflike(1, 0) static void fdsan_error(const char* fmt, ...) {
-@@ -250,11 +252,11 @@ int android_fdsan_close_with_tag(int fd, uint64_t expected_tag) {
+@@ -242,11 +244,11 @@ int android_fdsan_close_with_tag(int fd, uint64_t expected_tag) {
      return __close(fd);
    }
  
@@ -39,5 +39,5 @@ index 4b8991872..5fa83c0e9 100644
    uint64_t tag = expected_tag;
    if (!atomic_compare_exchange_strong(&fde->close_tag, &tag, 0)) {
 -- 
-2.33.0
+2.25.1
 

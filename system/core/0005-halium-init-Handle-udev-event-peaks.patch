@@ -16,10 +16,12 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/rootdir/ueventd.rc b/rootdir/ueventd.rc
-index 9c2cdf2..1c50fbc 100644
+index 56e774bdc..a1a5d0361 100644
 --- a/rootdir/ueventd.rc
 +++ b/rootdir/ueventd.rc
-@@ -1,5 +1,5 @@
+@@ -2,7 +2,7 @@ import /vendor/etc/ueventd.rc
+ import /odm/etc/ueventd.rc
+ 
  firmware_directories /etc/firmware/ /odm/firmware/ /vendor/firmware/ /firmware/image/
 -uevent_socket_rcvbuf_size 16M
 +uevent_socket_rcvbuf_size 128M
@@ -27,5 +29,5 @@ index 9c2cdf2..1c50fbc 100644
  subsystem graphics
      devname uevent_devpath
 -- 
-2.33.0
+2.25.1
 

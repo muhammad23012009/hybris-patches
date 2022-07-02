@@ -10,10 +10,10 @@ Change-Id: I476985a5370811d1d35eb8bc02943c87af7b69a8
  1 file changed, 15 insertions(+)
 
 diff --git a/apex/vndk.go b/apex/vndk.go
-index 5cc0e2a4..818b0d6b 100644
+index 75c0fb01b..90cdacf1a 100644
 --- a/apex/vndk.go
 +++ b/apex/vndk.go
-@@ -160,6 +160,21 @@ func makeCompatSymlinks(name string, ctx android.ModuleContext) (symlinks []stri
+@@ -145,6 +145,21 @@ func makeCompatSymlinks(name string, ctx android.ModuleContext) (symlinks []stri
  			dex2oat = "dex2oat64"
  		}
  		addSymlink("/apex/com.android.art/bin/"+dex2oat, "$(TARGET_OUT)/bin", "dex2oat")
@@ -36,5 +36,5 @@ index 5cc0e2a4..818b0d6b 100644
  	}
  	return
 -- 
-2.33.0
+2.25.1
 

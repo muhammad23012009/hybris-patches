@@ -9,10 +9,10 @@ Change-Id: Ib117d2eab23cc7407a638320385930458cc008c9
  1 file changed, 6 insertions(+)
 
 diff --git a/init/ueventd.cpp b/init/ueventd.cpp
-index 12aee62..974d166 100644
+index 331255b1e..fd22aa653 100644
 --- a/init/ueventd.cpp
 +++ b/init/ueventd.cpp
-@@ -241,6 +241,8 @@ void ColdBoot::WaitForSubProcesses() {
+@@ -242,6 +242,8 @@ void ColdBoot::WaitForSubProcesses() {
      }
  }
  
@@ -21,7 +21,7 @@ index 12aee62..974d166 100644
  void ColdBoot::Run() {
      android::base::Timer cold_boot_timer;
  
-@@ -263,6 +265,10 @@ void ColdBoot::Run() {
+@@ -264,6 +266,10 @@ void ColdBoot::Run() {
      WaitForSubProcesses();
  
      android::base::SetProperty(kColdBootDoneProp, "true");
@@ -33,5 +33,5 @@ index 12aee62..974d166 100644
  }
  
 -- 
-2.33.0
+2.25.1
 

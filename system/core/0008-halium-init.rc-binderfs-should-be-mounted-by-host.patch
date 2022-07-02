@@ -12,10 +12,10 @@ Change-Id: Ib4bacb8a00bdd70dcd99c1521af59b43148adf5c
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index 0d596ac..c2426ce 100644
+index 3a5d1d6cc..4aa42b05a 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -176,8 +176,9 @@ on init
+@@ -273,8 +273,9 @@ on init
      chown system package_info /config/sdcardfs
  
      # Mount binderfs
@@ -28,5 +28,5 @@ index 0d596ac..c2426ce 100644
  
      # Mount fusectl
 -- 
-2.33.0
+2.25.1
 

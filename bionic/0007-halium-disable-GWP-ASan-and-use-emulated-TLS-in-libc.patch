@@ -9,15 +9,15 @@ usage in earlier patch breaks linker compiled as static binary.
 
 Change-Id: Ic63b814917913ba6055aa9ba2c8e70c098b428af
 ---
- libc/Android.bp                   |  6 ++++--
+ libc/Android.bp                   |  3 ++-
  libc/bionic/gwp_asan_wrappers.cpp | 17 +++++++++++++++++
- 2 files changed, 21 insertions(+), 2 deletions(-)
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/libc/Android.bp b/libc/Android.bp
-index ad7f10ad8..342cce5aa 100644
+index baa989dc8..101491446 100644
 --- a/libc/Android.bp
 +++ b/libc/Android.bp
-@@ -50,7 +50,8 @@ libc_common_flags = [
+@@ -68,7 +68,8 @@ libc_common_flags = [
      "-Wexit-time-destructors",
  
      // GWP-ASan requires platform TLS.
@@ -27,28 +27,11 @@ index ad7f10ad8..342cce5aa 100644
  ]
  
  // Define some common cflags
-@@ -1624,6 +1625,7 @@ cc_library {
-             "libc_common_shared",
-         ],
-     },
-+    // cflags: ["-fno-emulated-tls"], - disabled for Halium
- 
-     required: [
-         "tzdata",
-@@ -2470,7 +2472,7 @@ cc_defaults {
-     ],
-     cflags: [
-         "-DUSE_SCUDO",
--        "-fno-emulated-tls", // Required for GWP-ASan.
-+        // "-fno-emulated-tls", // Required for GWP-ASan. - disabled for Halium
-     ],
-     shared_libs: ["libscudo_wrapper"],
- 
 diff --git a/libc/bionic/gwp_asan_wrappers.cpp b/libc/bionic/gwp_asan_wrappers.cpp
-index d3e6a14ce..51d498c23 100644
+index 6eb17495a..c1d150ad7 100644
 --- a/libc/bionic/gwp_asan_wrappers.cpp
 +++ b/libc/bionic/gwp_asan_wrappers.cpp
-@@ -47,6 +47,7 @@
+@@ -46,6 +46,7 @@
  #include "bionic/malloc_common_dynamic.h"
  #endif  // LIBC_STATIC
  
@@ -56,7 +39,7 @@ index d3e6a14ce..51d498c23 100644
  static gwp_asan::GuardedPoolAllocator GuardedAlloc;
  static const MallocDispatch* prev_dispatch;
  
-@@ -278,3 +279,19 @@ bool MaybeInitGwpAsan(libc_globals* globals, bool force_init) {
+@@ -277,3 +278,19 @@ bool MaybeInitGwpAsan(libc_globals* globals, bool force_init) {
  bool DispatchIsGwpAsan(const MallocDispatch* dispatch) {
    return dispatch == &gwp_asan_dispatch;
  }
@@ -77,5 +60,5 @@ index d3e6a14ce..51d498c23 100644
 +
 +#endif // DISABLED_FOR_HYBRIS_SUPPORT
 -- 
-2.32.0
+2.25.1
 

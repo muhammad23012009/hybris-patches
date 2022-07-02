@@ -1,4 +1,4 @@
-From 315d1deefb519c54b53d9716d303505051daebcf Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Alfred Neumayer <dev.beidl@gmail.com>
 Date: Sun, 12 Dec 2021 17:24:57 +0100
 Subject: [PATCH] (halium) init.rc: Create directory for trust-store socket
@@ -12,10 +12,10 @@ Change-Id: Iac114c1b0d92afb54d39ad314c6b521d6c088dc1
  1 file changed, 5 insertions(+)
 
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index c2426ce..da57d5f 100644
+index 4aa42b05a..70ade0cdc 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -400,6 +400,11 @@ on init
+@@ -509,6 +509,11 @@ on init
      start hwservicemanager
      start vndservicemanager
  
@@ -28,5 +28,5 @@ index c2426ce..da57d5f 100644
  # property when the power button is held.
  on property:sys.boot_from_charger_mode=1
 -- 
-2.32.1 (Apple Git-133)
+2.25.1
 

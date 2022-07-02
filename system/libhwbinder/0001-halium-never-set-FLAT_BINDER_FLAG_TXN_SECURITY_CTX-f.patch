@@ -16,10 +16,10 @@ Change-Id: I9c474cf48201b7407920605608c8e2a713afbc87
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/Parcel.cpp b/Parcel.cpp
-index f1d6dbd..505a71a 100644
+index b5648a5..6ace234 100644
 --- a/Parcel.cpp
 +++ b/Parcel.cpp
-@@ -205,7 +205,8 @@ status_t flatten_binder(const sp<ProcessState>& /*proc*/,
+@@ -206,7 +206,8 @@ status_t flatten_binder(const sp<ProcessState>& /*proc*/,
              obj.flags |= FLAT_BINDER_FLAG_ACCEPTS_FDS | FLAT_BINDER_FLAG_INHERIT_RT;
              obj.flags |= (policy & 3) << FLAT_BINDER_FLAG_SCHED_POLICY_SHIFT;
              if (local->isRequestingSid()) {
@@ -30,19 +30,19 @@ index f1d6dbd..505a71a 100644
              obj.hdr.type = BINDER_TYPE_BINDER;
              obj.binder = reinterpret_cast<uintptr_t>(local->getWeakRefs());
 diff --git a/ProcessState.cpp b/ProcessState.cpp
-index 694efd1..8734350 100644
+index dbd6c87..19af320 100644
 --- a/ProcessState.cpp
 +++ b/ProcessState.cpp
-@@ -167,7 +167,8 @@ bool ProcessState::becomeContextManager(context_check_func checkFunc, void* user
-         mBinderContextUserData = userData;
+@@ -122,7 +122,8 @@ void ProcessState::becomeContextManager()
+     AutoMutex _l(mLock);
  
-         flat_binder_object obj {
--            .flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,
+     flat_binder_object obj {
+-        .flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,
 +            // Disabled for Halium
 +            /*.flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,*/
-         };
+     };
  
-         status_t result = ioctl(mDriverFD, BINDER_SET_CONTEXT_MGR_EXT, &obj);
+     status_t result = ioctl(mDriverFD, BINDER_SET_CONTEXT_MGR_EXT, &obj);
 -- 
-2.31.1
+2.25.1
 

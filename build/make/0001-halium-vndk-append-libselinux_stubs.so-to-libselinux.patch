@@ -12,7 +12,7 @@ Subject: [PATCH] (halium) vndk: append libselinux_stubs.so to libselinux.so
  4 files changed, 4 insertions(+)
 
 diff --git a/target/product/gsi/28.txt b/target/product/gsi/28.txt
-index 712e91c587..457ede9209 100644
+index 712e91c58..457ede920 100644
 --- a/target/product/gsi/28.txt
 +++ b/target/product/gsi/28.txt
 @@ -198,6 +198,7 @@ VNDK-core: libprotobuf-cpp-lite.so
@@ -24,7 +24,7 @@ index 712e91c587..457ede9209 100644
  VNDK-core: libspeexresampler.so
  VNDK-core: libsqlite.so
 diff --git a/target/product/gsi/29.txt b/target/product/gsi/29.txt
-index 14faba5585..88cf8c18a6 100644
+index 14faba558..88cf8c18a 100644
 --- a/target/product/gsi/29.txt
 +++ b/target/product/gsi/29.txt
 @@ -246,6 +246,7 @@ VNDK-core: libprotobuf-cpp-lite.so
@@ -36,7 +36,7 @@ index 14faba5585..88cf8c18a6 100644
  VNDK-core: libspeexresampler.so
  VNDK-core: libsqlite.so
 diff --git a/target/product/gsi/30.txt b/target/product/gsi/30.txt
-index 0589517711..ac5e57af80 100644
+index 058951771..ac5e57af8 100644
 --- a/target/product/gsi/30.txt
 +++ b/target/product/gsi/30.txt
 @@ -15,6 +15,7 @@ LLNDK: libmediandk.so
@@ -48,7 +48,7 @@ index 0589517711..ac5e57af80 100644
  LLNDK: libvndksupport.so
  LLNDK: libvulkan.so
 diff --git a/target/product/gsi/current.txt b/target/product/gsi/current.txt
-index 0589517711..ac5e57af80 100644
+index 971ec922a..beb69e3a2 100644
 --- a/target/product/gsi/current.txt
 +++ b/target/product/gsi/current.txt
 @@ -15,6 +15,7 @@ LLNDK: libmediandk.so
@@ -60,5 +60,5 @@ index 0589517711..ac5e57af80 100644
  LLNDK: libvndksupport.so
  LLNDK: libvulkan.so
 -- 
-2.34.1
+2.25.1
 

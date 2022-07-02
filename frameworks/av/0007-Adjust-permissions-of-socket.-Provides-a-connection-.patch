@@ -1,7 +1,7 @@
-From f518bbe0727ec006039f9f517d44f9c50e1efba7 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss@canonical.com>
 Date: Wed, 30 Jul 2014 23:08:00 +0200
-Subject: [PATCH 1/2] Adjust permissions of socket. Provides a connection to a
+Subject: [PATCH] Adjust permissions of socket. Provides a connection to a
  per-user remote trust-store implementation via a unix domain socket.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -18,12 +18,12 @@ Signed-off-by: Thomas Voß <thomas.voss@canonical.com>
  1 file changed, 203 insertions(+)
 
 diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
-index 2e8c715..63e8c98 100644
+index d566239322..9660924ec6 100644
 --- a/services/camera/libcameraservice/CameraService.cpp
 +++ b/services/camera/libcameraservice/CameraService.cpp
 @@ -58,7 +58,9 @@
- #include <media/mediaplayer.h>
  #include <mediautils/BatteryNotifier.h>
+ #include <processinfo/ProcessInfoService.h>
  #include <utils/Errors.h>
 +#include <utils/KeyedVector.h>
  #include <utils/Log.h>
@@ -234,7 +234,7 @@ index 2e8c715..63e8c98 100644
  namespace android {
  
  using base::StringPrintf;
-@@ -1141,6 +1339,11 @@ Status CameraService::validateClientPermissionsLocked(const String8& cameraId,
+@@ -1173,6 +1371,11 @@ Status CameraService::validateClientPermissionsLocked(const String8& cameraId,
      // Check if we can trust clientUid
      if (clientUid == USE_CALLING_UID) {
          clientUid = callingUid;
@@ -247,5 +247,5 @@ index 2e8c715..63e8c98 100644
          ALOGE("CameraService::connect X (calling PID %d, calling UID %d) rejected "
                  "(don't trust clientUid %d)", callingPid, callingUid, clientUid);
 -- 
-2.32.1 (Apple Git-133)
+2.25.1
 

@@ -7,17 +7,18 @@ This is non-fatal as mounts can be handled outside LXC container.
 
 Change-Id: Ic3eb67019051298ea52b31ae342e3b9221ae5d74
 ---
- main.cpp | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ main.cpp | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/main.cpp b/main.cpp
-index ebe5510..7f91041 100644
+index dc63cae..71cc165 100644
 --- a/main.cpp
 +++ b/main.cpp
-@@ -236,7 +236,10 @@ static int process_config(VolumeManager* vm, bool* has_adoptable, bool* has_quot
+@@ -245,8 +245,10 @@ static int process_config(VolumeManager* vm, VoldConfigs* configs) {
  
          /* Make sure logical partitions have an updated blk_device. */
-         if (entry.fs_mgr_flags.logical && !fs_mgr_update_logical_partition(&entry)) {
+         if (entry.fs_mgr_flags.logical && !fs_mgr_update_logical_partition(&entry) &&
+-            !entry.fs_mgr_flags.no_fail) {
 -            PLOG(FATAL) << "could not find logical partition " << entry.blk_device;
 +            //PLOG(FATAL) << "could not find logical partition " << entry.blk_device;
 +            // Halium: make it non-fatal
@@ -27,5 +28,5 @@ index ebe5510..7f91041 100644
  
          if (entry.fs_mgr_flags.vold_managed) {
 -- 
-2.31.1
+2.25.1
 

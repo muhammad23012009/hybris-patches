@@ -13,10 +13,10 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
-index e80c3210f..0836b2e78 100644
+index 90db5091e1..57744a72b7 100644
 --- a/cmds/servicemanager/ServiceManager.cpp
 +++ b/cmds/servicemanager/ServiceManager.cpp
-@@ -183,9 +183,10 @@ Status ServiceManager::addService(const std::string& name, const sp<IBinder>& bi
+@@ -247,9 +247,10 @@ Status ServiceManager::addService(const std::string& name, const sp<IBinder>& bi
      auto ctx = mAccess->getCallingContext();
  
      // apps cannot add services
@@ -30,10 +30,10 @@ index e80c3210f..0836b2e78 100644
      if (!mAccess->canAdd(ctx, name)) {
          return Status::fromExceptionCode(Status::EX_SECURITY);
 diff --git a/libs/binder/IServiceManager.cpp b/libs/binder/IServiceManager.cpp
-index 218970a1b..5b162080c 100644
+index f684cf672f..455205d401 100644
 --- a/libs/binder/IServiceManager.cpp
 +++ b/libs/binder/IServiceManager.cpp
-@@ -131,6 +131,8 @@ static String16 _permission("permission");
+@@ -134,6 +134,8 @@ static String16 _permission("permission");
  
  bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t* outUid)
  {
@@ -42,7 +42,7 @@ index 218970a1b..5b162080c 100644
      IPCThreadState* ipcState = IPCThreadState::self();
      pid_t pid = ipcState->getCallingPid();
      uid_t uid = ipcState->getCallingUid();
-@@ -141,6 +143,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
+@@ -144,6 +146,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
  
  bool checkPermission(const String16& permission, pid_t pid, uid_t uid)
  {
@@ -52,5 +52,5 @@ index 218970a1b..5b162080c 100644
      static sp<IPermissionController> gPermissionController;
  
 -- 
-2.33.0
+2.25.1
 

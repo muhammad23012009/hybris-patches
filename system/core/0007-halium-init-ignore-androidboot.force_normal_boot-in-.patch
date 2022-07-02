@@ -6,18 +6,19 @@ Subject: [PATCH] (halium) init: ignore androidboot.force_normal_boot in kernel
 
 Change-Id: Iba965eb43fee2e5642f36fca301e187e5291c100
 ---
- init/first_stage_init.cpp | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ init/first_stage_init.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index 1a9036e..0666fdb 100644
+index 21bf6b778..93b56b2b7 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -95,7 +95,9 @@ void FreeRamdisk(DIR* dir, dev_t dev) {
+@@ -103,8 +103,9 @@ void FreeRamdisk(DIR* dir, dev_t dev) {
  }
  
- bool ForceNormalBoot(const std::string& cmdline) {
--    return cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;
+ bool ForceNormalBoot(const std::string& cmdline, const std::string& bootconfig) {
+-    return bootconfig.find("androidboot.force_normal_boot = \"1\"") != std::string::npos ||
+-           cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;
 +    // Disabled for Halium
 +    return false;
 +    /*return cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;*/
@@ -25,5 +26,5 @@ index 1a9036e..0666fdb 100644
  
  }  // namespace
 -- 
-2.33.0
+2.25.1
 

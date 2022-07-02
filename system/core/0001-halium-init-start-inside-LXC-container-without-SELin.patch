@@ -11,18 +11,18 @@ Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
 ---
  init/Android.bp           |  2 ++
  init/first_stage_init.cpp | 47 +++++++++++++++++++++++++++++----------
- init/init.cpp             | 10 ++++++---
+ init/init.cpp             |  8 ++++++-
  init/property_service.cpp | 24 ++++++++++++--------
  init/service.cpp          | 10 +++++----
  init/subcontext.cpp       |  3 ++-
  init/util.cpp             | 18 +++++++++------
- 7 files changed, 78 insertions(+), 36 deletions(-)
+ 7 files changed, 78 insertions(+), 34 deletions(-)
 
 diff --git a/init/Android.bp b/init/Android.bp
-index f292d689f..711d73735 100644
+index 00ac6a752..fc55ee4aa 100644
 --- a/init/Android.bp
 +++ b/init/Android.bp
-@@ -90,6 +90,7 @@ cc_defaults {
+@@ -119,6 +119,7 @@ libinit_cc_defaults {
          "-Wall",
          "-Wextra",
          "-Wno-unused-parameter",
@@ -30,7 +30,7 @@ index f292d689f..711d73735 100644
          "-Werror",
          "-Wthread-safety",
          "-DALLOW_FIRST_STAGE_CONSOLE=0",
-@@ -335,6 +336,7 @@ cc_binary {
+@@ -503,6 +504,7 @@ cc_binary {
          "-Wall",
          "-Wextra",
          "-Wno-unused-parameter",
@@ -39,17 +39,16 @@ index f292d689f..711d73735 100644
      ],
      static_libs: [
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index 021557697..139768b63 100644
+index c7b7b0c13..44b8747a9 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -189,21 +189,33 @@ int FirstStageMain(int argc, char** argv) {
+@@ -198,14 +198,23 @@ int FirstStageMain(int argc, char** argv) {
      CHECKCALL(setenv("PATH", _PATH_DEFPATH, 1));
      // Get the basic filesystem setup we need put together in the initramdisk
      // on / and then we'll let the rc file figure out the rest.
 -    CHECKCALL(mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755"));
 -    CHECKCALL(mkdir("/dev/pts", 0755));
 -    CHECKCALL(mkdir("/dev/socket", 0755));
--    CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
 +
 +    // We need to disable certain things for Anbox while the recovery needs it.
 +    bool is_recovery = IsRecoveryMode();
@@ -61,6 +60,8 @@ index 021557697..139768b63 100644
 +        CHECKCALL(mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755"));
 +        CHECKCALL(mkdir("/dev/pts", 0755));
 +        CHECKCALL(mkdir("/dev/socket", 0755));
+     CHECKCALL(mkdir("/dev/dm-user", 0755));
+-    CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
 +        CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
  #define MAKE_STR(x) __STRING(x)
 -    CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
@@ -70,7 +71,8 @@ index 021557697..139768b63 100644
      // Don't expose the raw commandline to unprivileged processes.
      CHECKCALL(chmod("/proc/cmdline", 0440));
      std::string cmdline;
-     android::base::ReadFileToString("/proc/cmdline", &cmdline);
+@@ -216,8 +225,11 @@ int FirstStageMain(int argc, char** argv) {
+     android::base::ReadFileToString("/proc/bootconfig", &bootconfig);
      gid_t groups[] = {AID_READPROC};
      CHECKCALL(setgroups(arraysize(groups), groups));
 -    CHECKCALL(mount("sysfs", "/sys", "sysfs", 0, NULL));
@@ -83,7 +85,7 @@ index 021557697..139768b63 100644
  
      CHECKCALL(mknod("/dev/kmsg", S_IFCHR | 0600, makedev(1, 11)));
  
-@@ -215,8 +227,14 @@ int FirstStageMain(int argc, char** argv) {
+@@ -229,8 +241,14 @@ int FirstStageMain(int argc, char** argv) {
      CHECKCALL(mknod("/dev/urandom", S_IFCHR | 0666, makedev(1, 9)));
  
      // This is needed for log wrapper, which gets called before ueventd runs.
@@ -100,7 +102,7 @@ index 021557697..139768b63 100644
  
      // These below mounts are done in first stage init so that first stage mount can mount
      // subdirectories of /mnt/{vendor,product}/.  Other mounts, not required by first stage mount,
-@@ -246,7 +264,8 @@ int FirstStageMain(int argc, char** argv) {
+@@ -265,7 +283,8 @@ int FirstStageMain(int argc, char** argv) {
          for (const auto& [error_string, error_errno] : errors) {
              LOG(ERROR) << error_string << " " << strerror(error_errno);
          }
@@ -110,17 +112,17 @@ index 021557697..139768b63 100644
      }
  
      LOG(INFO) << "init first stage started!";
-@@ -299,7 +318,8 @@ int FirstStageMain(int argc, char** argv) {
-         }
+@@ -357,7 +376,8 @@ int FirstStageMain(int argc, char** argv) {
+         SwitchRoot("/first_stage_ramdisk");
      }
  
--    if (!DoFirstStageMount()) {
+-    if (!DoFirstStageMount(!created_devices)) {
 +    // Disabled for Anbox
 +    if (is_recovery && !DoFirstStageMount()) {
          LOG(FATAL) << "Failed to mount required partitions early ...";
      }
  
-@@ -318,8 +338,11 @@ int FirstStageMain(int argc, char** argv) {
+@@ -376,8 +396,11 @@ int FirstStageMain(int argc, char** argv) {
      setenv(kEnvFirstStageStartedAt, std::to_string(start_time.time_since_epoch().count()).c_str(),
             1);
  
@@ -134,14 +136,13 @@ index 021557697..139768b63 100644
      dup2(fd, STDOUT_FILENO);
      dup2(fd, STDERR_FILENO);
 diff --git a/init/init.cpp b/init/init.cpp
-index ae8d23fdf..2c6eda81d 100644
+index 942feb939..5646b69c2 100644
 --- a/init/init.cpp
 +++ b/init/init.cpp
-@@ -809,8 +809,10 @@ int SecondStageMain(int argc, char** argv) {
+@@ -872,7 +872,10 @@ int SecondStageMain(int argc, char** argv) {
      // Queue an action that waits for coldboot done so we know ueventd has set up all of /dev...
      am.QueueBuiltinAction(wait_for_coldboot_done_action, "wait_for_coldboot_done");
      // ... so that we can start queuing up actions that require stuff from /dev.
--    am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
 -    am.QueueBuiltinAction(SetMmapRndBitsAction, "SetMmapRndBits");
 +    // Disabled for Anbox
 +    //am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
@@ -150,22 +151,21 @@ index ae8d23fdf..2c6eda81d 100644
      Keychords keychords;
      am.QueueBuiltinAction(
              [&epoll, &keychords](const BuiltinArguments& args) -> Result<void> {
-@@ -827,7 +829,9 @@ int SecondStageMain(int argc, char** argv) {
+@@ -887,6 +890,9 @@ int SecondStageMain(int argc, char** argv) {
+     // Trigger all the boot actions to get us started.
+     am.QueueEventTrigger("init");
  
-     // Repeat mix_hwrng_into_linux_rng in case /dev/hw_random or /dev/random
-     // wasn't ready immediately after wait_for_coldboot_done
--    am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
 +    // Disabled for Anbox
 +    // am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
 +
- 
      // Don't mount filesystems or start core system services in charger mode.
      std::string bootmode = GetProperty("ro.bootmode", "");
+     if (bootmode == "charger") {
 diff --git a/init/property_service.cpp b/init/property_service.cpp
-index 42dd5afcb..4b515d445 100644
+index 5a8fc5418..5e9d8d05f 100644
 --- a/init/property_service.cpp
 +++ b/init/property_service.cpp
-@@ -132,7 +132,8 @@ void StopSendingMessages() {
+@@ -142,7 +142,8 @@ void StopSendingMessages() {
  }
  
  bool CanReadProperty(const std::string& source_context, const std::string& name) {
@@ -175,7 +175,7 @@ index 42dd5afcb..4b515d445 100644
      property_info_area->GetPropertyInfo(name.c_str(), &target_context, nullptr);
  
      PropertyAuditData audit_data;
-@@ -143,12 +144,14 @@ bool CanReadProperty(const std::string& source_context, const std::string& name)
+@@ -153,12 +154,14 @@ bool CanReadProperty(const std::string& source_context, const std::string& name)
      audit_data.cr = &cr;
  
      return selinux_check_access(source_context.c_str(), target_context, "file", "read",
@@ -192,7 +192,7 @@ index 42dd5afcb..4b515d445 100644
          return false;
      }
  
-@@ -160,7 +163,8 @@ static bool CheckMacPerms(const std::string& name, const char* target_context,
+@@ -170,7 +173,8 @@ static bool CheckMacPerms(const std::string& name, const char* target_context,
      bool has_access = (selinux_check_access(source_context, target_context, "property_service",
                                              "set", &audit_data) == 0);
  
@@ -202,7 +202,7 @@ index 42dd5afcb..4b515d445 100644
  }
  
  static uint32_t PropertySet(const std::string& name, const std::string& value, std::string* error) {
-@@ -551,11 +555,12 @@ static void handle_property_set_fd() {
+@@ -564,11 +568,12 @@ static void handle_property_set_fd() {
          prop_name[PROP_NAME_MAX-1] = 0;
          prop_value[PROP_VALUE_MAX-1] = 0;
  
@@ -218,7 +218,7 @@ index 42dd5afcb..4b515d445 100644
  
          const auto& cr = socket.cred();
          std::string error;
-@@ -580,11 +585,12 @@ static void handle_property_set_fd() {
+@@ -593,11 +598,12 @@ static void handle_property_set_fd() {
          }
  
          std::string source_context;
@@ -234,10 +234,10 @@ index 42dd5afcb..4b515d445 100644
          const auto& cr = socket.cred();
          std::string error;
 diff --git a/init/service.cpp b/init/service.cpp
-index d6f913cca..ec25684e7 100644
+index dcb3d0c3c..193b718bd 100644
 --- a/init/service.cpp
 +++ b/init/service.cpp
-@@ -242,9 +242,10 @@ void Service::SetProcessAttributesAndCaps() {
+@@ -239,9 +239,10 @@ void Service::SetProcessAttributesAndCaps() {
      }
  
      if (!seclabel_.empty()) {
@@ -250,7 +250,7 @@ index d6f913cca..ec25684e7 100644
      }
  
      if (capabilities_) {
-@@ -450,7 +451,8 @@ Result<void> Service::Start() {
+@@ -453,7 +454,8 @@ Result<void> Service::Start() {
      }
  
      std::string scon;
@@ -260,20 +260,20 @@ index d6f913cca..ec25684e7 100644
          scon = seclabel_;
      } else {
          auto result = ComputeContextFromExecutable(args_[0]);
-@@ -458,7 +460,7 @@ Result<void> Service::Start() {
+@@ -461,7 +463,7 @@ Result<void> Service::Start() {
              return result.error();
          }
          scon = *result;
 -    }
 +    }*/
  
-     if (!AreRuntimeApexesReady() && !pre_apexd_) {
-         // If this service is started before the Runtime and ART APEXes get
+     // APEXd is always started in the "current" namespace because it is the process to set up
+     // the current namespace.
 diff --git a/init/subcontext.cpp b/init/subcontext.cpp
-index 9d4ea8cd3..628380e65 100644
+index fa48beab3..07258c17a 100644
 --- a/init/subcontext.cpp
 +++ b/init/subcontext.cpp
-@@ -212,7 +212,8 @@ void Subcontext::Fork() {
+@@ -213,7 +213,8 @@ void Subcontext::Fork() {
  
          // We don't switch contexts if we're running the unit tests.  We don't use std::optional,
          // since we still need a real context string to pass to the builtin functions.
@@ -284,7 +284,7 @@ index 9d4ea8cd3..628380e65 100644
                  PLOG(FATAL) << "Could not set execcon for '" << context_ << "'";
              }
 diff --git a/init/util.cpp b/init/util.cpp
-index 255434a1b..653b06002 100644
+index 9f7bfdb5b..bff963876 100644
 --- a/init/util.cpp
 +++ b/init/util.cpp
 @@ -88,18 +88,20 @@ Result<uid_t> DecodeUid(const std::string& name) {
@@ -339,5 +339,5 @@ index 255434a1b..653b06002 100644
      auto guard = android::base::make_scope_guard([&addr] { unlink(addr.sun_path); });
  
 -- 
-2.33.0
+2.25.1
 
