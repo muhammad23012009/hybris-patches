@@ -11,20 +11,20 @@ Signed-off-by: David Greaves <david.greaves@jollamobile.com>
  2 files changed, 3 insertions(+), 11 deletions(-)
 
 diff --git a/opengl/libs/EGL/egl.cpp b/opengl/libs/EGL/egl.cpp
-index 43f7a075a..d73610f87 100644
+index e5b9e14bd5..4617c5fa36 100644
 --- a/opengl/libs/EGL/egl.cpp
 +++ b/opengl/libs/EGL/egl.cpp
-@@ -234,7 +234,7 @@ void gl_noop() {
- // ----------------------------------------------------------------------------
+@@ -184,7 +184,7 @@ void gl_unimplemented() {
+ void gl_noop() {}
  
- void setGlThreadSpecific(gl_hooks_t const *value) {
--    gl_hooks_t const * volatile * tls_hooks = get_tls_hooks();
+ void setGlThreadSpecific(gl_hooks_t const* value) {
+-    gl_hooks_t const* volatile* tls_hooks = get_tls_hooks();
 +    gl_hooks_t const * volatile * tls_hooks = const_cast<gl_hooks_t const **>(reinterpret_cast<gl_hooks_t**>(__get_tls_hooks()));
      tls_hooks[TLS_SLOT_OPENGL_API] = value;
  }
  
 diff --git a/opengl/libs/hooks.h b/opengl/libs/hooks.h
-index 86fec21ba..377e51eb3 100644
+index 86fec21bae..377e51eb38 100644
 --- a/opengl/libs/hooks.h
 +++ b/opengl/libs/hooks.h
 @@ -34,7 +34,7 @@
@@ -55,5 +55,5 @@ index 86fec21ba..377e51eb3 100644
      return hooks;
  }
 -- 
-2.31.1
+2.25.1
 

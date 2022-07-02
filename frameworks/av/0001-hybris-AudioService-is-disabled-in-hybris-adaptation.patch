@@ -16,10 +16,10 @@ Signed-off-by: Björn Bidar <theodorstormgrade@gmail.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
-index 5f71b80fe1..bde8bf2ffe 100644
+index b53aec100e..d566239322 100644
 --- a/services/camera/libcameraservice/CameraService.cpp
 +++ b/services/camera/libcameraservice/CameraService.cpp
-@@ -2669,9 +2669,15 @@ void CameraService::increaseSoundRef() {
+@@ -2896,9 +2896,15 @@ void CameraService::increaseSoundRef() {
      mSoundRef++;
  }
  
@@ -35,7 +35,7 @@ index 5f71b80fe1..bde8bf2ffe 100644
      LOG1("CameraService::loadSoundLocked ref=%d", mSoundRef);
      if (SOUND_SHUTTER == kind && mSoundPlayer[SOUND_SHUTTER] == NULL) {
          mSoundPlayer[SOUND_SHUTTER] = newMediaPlayer("/product/media/audio/ui/camera_click.ogg");
-@@ -2690,6 +2696,7 @@ void CameraService::loadSoundLocked(sound_kind kind) {
+@@ -2917,6 +2923,7 @@ void CameraService::loadSoundLocked(sound_kind kind) {
              mSoundPlayer[SOUND_RECORDING_STOP] = newMediaPlayer("/system/media/audio/ui/VideoStop.ogg");
          }
      }
@@ -44,5 +44,5 @@ index 5f71b80fe1..bde8bf2ffe 100644
  
  void CameraService::decreaseSoundRef() {
 -- 
-2.31.1
+2.25.1
 

@@ -13,10 +13,10 @@ Change-Id: Ibff0f58a7867061a9353bf8bf5ab092ed562b65f
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/libs/binder/Parcel.cpp b/libs/binder/Parcel.cpp
-index 64a4f9bf6..5d90d77b2 100644
+index 617708f3d4..1425ba8dff 100644
 --- a/libs/binder/Parcel.cpp
 +++ b/libs/binder/Parcel.cpp
-@@ -223,9 +223,10 @@ status_t Parcel::flattenBinder(const sp<IBinder>& binder)
+@@ -246,9 +246,10 @@ status_t Parcel::flattenBinder(const sp<IBinder>& binder)
                  // override value, since it is set explicitly
                  schedBits = schedPolicyMask(policy, priority);
              }
@@ -26,15 +26,15 @@ index 64a4f9bf6..5d90d77b2 100644
                  obj.flags |= FLAT_BINDER_FLAG_TXN_SECURITY_CTX;
 -            }
 +            }*/
-             obj.hdr.type = BINDER_TYPE_BINDER;
-             obj.binder = reinterpret_cast<uintptr_t>(local->getWeakRefs());
-             obj.cookie = reinterpret_cast<uintptr_t>(local);
+             if (local->isInheritRt()) {
+                 obj.flags |= FLAT_BINDER_FLAG_INHERIT_RT;
+             }
 diff --git a/libs/binder/ProcessState.cpp b/libs/binder/ProcessState.cpp
-index 4b773e816..c06d24c9d 100644
+index bade9187ac..b6cde9a404 100644
 --- a/libs/binder/ProcessState.cpp
 +++ b/libs/binder/ProcessState.cpp
-@@ -139,7 +139,8 @@ bool ProcessState::becomeContextManager(context_check_func checkFunc, void* user
-     mBinderContextUserData = userData;
+@@ -150,7 +150,8 @@ bool ProcessState::becomeContextManager()
+     AutoMutex _l(mLock);
  
      flat_binder_object obj {
 -        .flags = FLAT_BINDER_FLAG_TXN_SECURITY_CTX,
@@ -44,5 +44,5 @@ index 4b773e816..c06d24c9d 100644
  
      int result = ioctl(mDriverFD, BINDER_SET_CONTEXT_MGR_EXT, &obj);
 -- 
-2.33.0
+2.25.1
 

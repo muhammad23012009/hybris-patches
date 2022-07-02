@@ -42,10 +42,10 @@ index d12a45c556..d84b6395f1 100644
 +#endif  // ART_RUNTIME_THREAD_CURRENT_INL_H_
 \ No newline at end of file
 diff --git a/runtime/thread.cc b/runtime/thread.cc
-index 77b9f4f24c..b6b58c8424 100644
+index 16a5f93be4..595e23ff3a 100644
 --- a/runtime/thread.cc
 +++ b/runtime/thread.cc
-@@ -948,7 +948,7 @@ bool Thread::Init(ThreadList* thread_list, JavaVMExt* java_vm, JNIEnvExt* jni_en
+@@ -949,7 +949,7 @@ bool Thread::Init(ThreadList* thread_list, JavaVMExt* java_vm, JNIEnvExt* jni_en
      interpreter::InitInterpreterTls(this);
    }
  
@@ -54,7 +54,7 @@ index 77b9f4f24c..b6b58c8424 100644
    __get_tls()[TLS_SLOT_ART_THREAD_SELF] = this;
  #else
    CHECK_PTHREAD_CALL(pthread_setspecific, (Thread::pthread_key_self_, this), "attach self");
-@@ -1464,6 +1464,7 @@ bool Thread::ModifySuspendCountInternal(Thread* self,
+@@ -1468,6 +1468,7 @@ bool Thread::ModifySuspendCountInternal(Thread* self,
  
    tls32_.suspend_count += delta;
    switch (reason) {
@@ -62,7 +62,7 @@ index 77b9f4f24c..b6b58c8424 100644
      case SuspendReason::kForUserCode:
        tls32_.user_code_suspend_count += delta;
        break;
-@@ -2159,10 +2160,12 @@ void Thread::DumpJavaStack(std::ostream& os, bool check_suspended, bool dump_loc
+@@ -2163,10 +2164,12 @@ void Thread::DumpJavaStack(std::ostream& os, bool check_suspended, bool dump_loc
    // thread.
    ScopedExceptionStorage ses(Thread::Current());
  
@@ -75,7 +75,7 @@ index 77b9f4f24c..b6b58c8424 100644
  }
  
  void Thread::DumpStack(std::ostream& os,
-@@ -2182,6 +2185,7 @@ void Thread::DumpStack(std::ostream& os,
+@@ -2186,6 +2189,7 @@ void Thread::DumpStack(std::ostream& os,
    if (safe_to_dump || force_dump_stack) {
      // If we're currently in native code, dump that stack before dumping the managed stack.
      if (dump_native_stack && (dump_for_abort || force_dump_stack || ShouldShowNativeStack(this))) {
@@ -83,7 +83,7 @@ index 77b9f4f24c..b6b58c8424 100644
        ArtMethod* method =
            GetCurrentMethod(nullptr,
                             /*check_suspended=*/ !force_dump_stack,
-@@ -2202,7 +2206,7 @@ void Thread::ThreadExitCallback(void* arg) {
+@@ -2206,7 +2210,7 @@ void Thread::ThreadExitCallback(void* arg) {
      LOG(WARNING) << "Native thread exiting without having called DetachCurrentThread (maybe it's "
          "going to use a pthread_key_create destructor?): " << *self;
      CHECK(is_started_);
@@ -92,7 +92,7 @@ index 77b9f4f24c..b6b58c8424 100644
      __get_tls()[TLS_SLOT_ART_THREAD_SELF] = self;
  #else
      CHECK_PTHREAD_CALL(pthread_setspecific, (Thread::pthread_key_self_, self), "reattach self");
-@@ -2457,6 +2461,7 @@ void Thread::Destroy() {
+@@ -2461,6 +2465,7 @@ void Thread::Destroy() {
    }
  }
  
@@ -100,7 +100,7 @@ index 77b9f4f24c..b6b58c8424 100644
  Thread::~Thread() {
    CHECK(tlsPtr_.class_loader_override == nullptr);
    CHECK(tlsPtr_.jpeer == nullptr);
-@@ -2499,6 +2504,7 @@ Thread::~Thread() {
+@@ -2497,6 +2502,7 @@ Thread::~Thread() {
      CleanupCpu();
    }
  
@@ -108,7 +108,7 @@ index 77b9f4f24c..b6b58c8424 100644
    delete tlsPtr_.instrumentation_stack;
    delete tlsPtr_.name;
    delete tlsPtr_.deps_or_stack_trace_sample.stack_trace_sample;
-@@ -3596,6 +3602,7 @@ void Thread::QuickDeliverException() {
+@@ -3655,6 +3661,7 @@ void Thread::QuickDeliverException() {
      }
      if (force_retry_instr) {
        DCHECK(Runtime::Current()->AreNonStandardExitsEnabled());
@@ -116,7 +116,7 @@ index 77b9f4f24c..b6b58c8424 100644
      }
      force_deopt = force_frame_pop || force_retry_instr;
    }
-@@ -3726,6 +3733,7 @@ class ReferenceMapVisitor : public StackVisitor {
+@@ -3785,6 +3792,7 @@ class ReferenceMapVisitor : public StackVisitor {
      VisitDeclaringClass(m);
      DCHECK(m != nullptr);
      size_t num_regs = shadow_frame->NumberOfVRegs();
@@ -124,7 +124,7 @@ index 77b9f4f24c..b6b58c8424 100644
      // handle scope for JNI or References for interpreter.
      for (size_t reg = 0; reg < num_regs; ++reg) {
        mirror::Object* ref = shadow_frame->GetVRegReference(reg);
-@@ -4026,6 +4034,7 @@ void Thread::VisitRoots(RootVisitor* visitor) {
+@@ -4140,6 +4148,7 @@ void Thread::VisitRoots(RootVisitor* visitor) {
    tlsPtr_.jni_env->VisitJniLocalRoots(visitor, RootInfo(kRootJNILocal, thread_id));
    tlsPtr_.jni_env->VisitMonitorRoots(visitor, RootInfo(kRootJNIMonitor, thread_id));
    HandleScopeVisitRoots(visitor, thread_id);
@@ -132,7 +132,7 @@ index 77b9f4f24c..b6b58c8424 100644
    // Visit roots for deoptimization.
    if (tlsPtr_.stacked_shadow_frame_record != nullptr) {
      RootCallbackVisitor visitor_to_callback(visitor, thread_id);
-@@ -4204,6 +4213,7 @@ bool Thread::UnprotectStack() {
+@@ -4327,6 +4336,7 @@ bool Thread::UnprotectStack() {
    return mprotect(pregion, kStackOverflowProtectedSize, PROT_READ|PROT_WRITE) == 0;
  }
  
@@ -140,15 +140,15 @@ index 77b9f4f24c..b6b58c8424 100644
  void Thread::PushVerifier(verifier::MethodVerifier* verifier) {
    verifier->link_ = tlsPtr_.method_verifier;
    tlsPtr_.method_verifier = verifier;
-@@ -4365,4 +4375,4 @@ ScopedExceptionStorage::~ScopedExceptionStorage() {
-   }
- }
+@@ -4496,4 +4506,4 @@ ScopedExceptionStorage::~ScopedExceptionStorage() {
  
--}  // namespace art
-+}  // namespace art
+ }  // namespace art
+ 
+-#pragma clang diagnostic pop  // -Wconversion
++#pragma clang diagnostic pop  // -Wconversion
 \ No newline at end of file
 diff --git a/runtime/thread_list.cc b/runtime/thread_list.cc
-index 5d1dd55390..d60c1af9cc 100644
+index 84b7384c46..97a4096aa2 100644
 --- a/runtime/thread_list.cc
 +++ b/runtime/thread_list.cc
 @@ -73,6 +73,7 @@ static constexpr bool kDumpUnattachedThreadNativeStackForSigQuit = true;
@@ -159,7 +159,7 @@ index 5d1dd55390..d60c1af9cc 100644
        unregistering_count_(0),
        suspend_all_historam_("suspend all histogram", 16, 64),
        long_suspend_(false),
-@@ -161,6 +162,7 @@ static void DumpUnattachedThread(std::ostream& os, pid_t tid, bool dump_native_s
+@@ -152,6 +153,7 @@ static void DumpUnattachedThread(std::ostream& os, pid_t tid, bool dump_native_s
    // TODO: No thread safety analysis as DumpState with a null thread won't access fields, should
    // refactor DumpState to avoid skipping analysis.
    Thread::DumpState(os, nullptr, tid);
@@ -167,7 +167,7 @@ index 5d1dd55390..d60c1af9cc 100644
    if (dump_native_stack) {
      DumpNativeStack(os, tid, nullptr, "  native: ");
    }
-@@ -347,6 +349,7 @@ size_t ThreadList::RunCheckpoint(Closure* checkpoint_function, Closure* callback
+@@ -338,6 +340,7 @@ size_t ThreadList::RunCheckpoint(Closure* checkpoint_function, Closure* callback
              break;
            } else {
              // The thread is probably suspended, try to make sure that it stays suspended.
@@ -175,7 +175,7 @@ index 5d1dd55390..d60c1af9cc 100644
              if (thread->GetState() == kRunnable) {
                // Spurious fail, try again.
                continue;
-@@ -384,6 +387,7 @@ size_t ThreadList::RunCheckpoint(Closure* checkpoint_function, Closure* callback
+@@ -375,6 +378,7 @@ size_t ThreadList::RunCheckpoint(Closure* checkpoint_function, Closure* callback
  
    // Run the checkpoint on the suspended threads.
    for (const auto& thread : suspended_count_modified_threads) {
@@ -183,7 +183,7 @@ index 5d1dd55390..d60c1af9cc 100644
      // We know for sure that the thread is suspended at this point.
      DCHECK(thread->IsSuspended());
      checkpoint_function->Run(thread);
-@@ -668,6 +672,7 @@ void ThreadList::SuspendAll(const char* cause, bool long_suspend) {
+@@ -659,6 +663,7 @@ void ThreadList::SuspendAll(const char* cause, bool long_suspend) {
  }
  
  // Ensures all threads running Java suspend and that those not running Java don't start.
@@ -191,7 +191,7 @@ index 5d1dd55390..d60c1af9cc 100644
  void ThreadList::SuspendAllInternal(Thread* self,
                                      Thread* ignore1,
                                      Thread* ignore2,
-@@ -701,6 +706,7 @@ void ThreadList::SuspendAllInternal(Thread* self,
+@@ -692,6 +697,7 @@ void ThreadList::SuspendAllInternal(Thread* self,
      MutexLock mu2(self, *Locks::thread_suspend_count_lock_);
      // Update global suspend all state for attaching threads.
      ++suspend_all_count_;
@@ -199,7 +199,7 @@ index 5d1dd55390..d60c1af9cc 100644
      pending_threads.store(list_.size() - num_ignored, std::memory_order_relaxed);
      // Increment everybody's suspend count (except those that should be ignored).
      for (const auto& thread : list_) {
-@@ -1111,6 +1117,7 @@ Thread* ThreadList::FindThreadByThreadId(uint32_t thread_id) {
+@@ -1115,6 +1121,7 @@ Thread* ThreadList::FindThreadByTid(int tid) {
  }
  
  void ThreadList::WaitForOtherNonDaemonThreadsToExit(bool check_no_birth) {
@@ -207,7 +207,7 @@ index 5d1dd55390..d60c1af9cc 100644
    ScopedTrace trace(__PRETTY_FUNCTION__);
    Thread* self = Thread::Current();
    Locks::mutator_lock_->AssertNotHeld(self);
-@@ -1118,6 +1125,7 @@ void ThreadList::WaitForOtherNonDaemonThreadsToExit(bool check_no_birth) {
+@@ -1122,6 +1129,7 @@ void ThreadList::WaitForOtherNonDaemonThreadsToExit(bool check_no_birth) {
      Locks::runtime_shutdown_lock_->Lock(self);
      if (check_no_birth) {
        // No more threads can be born after we start to shutdown.
@@ -215,7 +215,7 @@ index 5d1dd55390..d60c1af9cc 100644
        CHECK(Runtime::Current()->IsShuttingDownLocked());
        CHECK_EQ(Runtime::Current()->NumberOfThreadsBeingBorn(), 0U);
      } else {
-@@ -1176,6 +1184,7 @@ void ThreadList::SuspendAllDaemonThreadsForShutdown() {
+@@ -1180,6 +1188,7 @@ void ThreadList::SuspendAllDaemonThreadsForShutdown() {
    if (daemons_left == 0) {
      // No threads left; safe to shut down.
      return;
@@ -223,7 +223,7 @@ index 5d1dd55390..d60c1af9cc 100644
    }
    // There is not a clean way to shut down if we have daemons left. We have no mechanism for
    // killing them and reclaiming thread stacks. We also have no mechanism for waiting until they
-@@ -1208,6 +1217,7 @@ void ThreadList::SuspendAllDaemonThreadsForShutdown() {
+@@ -1212,6 +1221,7 @@ void ThreadList::SuspendAllDaemonThreadsForShutdown() {
      }
      if (found_running) {
        // Sleep briefly before checking again. Max total sleep time is kTimeoutMicroseconds.
@@ -231,7 +231,7 @@ index 5d1dd55390..d60c1af9cc 100644
        usleep(kSleepMicroseconds);
      } else {
        all_suspended = true;
-@@ -1265,9 +1275,11 @@ void ThreadList::Register(Thread* self) {
+@@ -1269,9 +1279,11 @@ void ThreadList::Register(Thread* self) {
    // SuspendAll requests.
    MutexLock mu(self, *Locks::thread_list_lock_);
    MutexLock mu2(self, *Locks::thread_suspend_count_lock_);
@@ -243,7 +243,7 @@ index 5d1dd55390..d60c1af9cc 100644
      bool updated = self->ModifySuspendCount(self, +1, nullptr, SuspendReason::kInternal);
      DCHECK(updated);
    }
-@@ -1344,7 +1356,7 @@ void ThreadList::Unregister(Thread* self) {
+@@ -1348,7 +1360,7 @@ void ThreadList::Unregister(Thread* self) {
  
    // Clear the TLS data, so that the underlying native thread is recognizably detached.
    // (It may wish to reattach later.)
@@ -252,7 +252,7 @@ index 5d1dd55390..d60c1af9cc 100644
    __get_tls()[TLS_SLOT_ART_THREAD_SELF] = nullptr;
  #else
    CHECK_PTHREAD_CALL(pthread_setspecific, (Thread::pthread_key_self_, nullptr), "detach self");
-@@ -1447,4 +1459,4 @@ ScopedSuspendAll::~ScopedSuspendAll() {
+@@ -1451,4 +1463,4 @@ ScopedSuspendAll::~ScopedSuspendAll() {
    Runtime::Current()->GetThreadList()->ResumeAll();
  }
  
@@ -260,5 +260,5 @@ index 5d1dd55390..d60c1af9cc 100644
 +}  // namespace art
 \ No newline at end of file
 -- 
-2.31.1
+2.25.1
 

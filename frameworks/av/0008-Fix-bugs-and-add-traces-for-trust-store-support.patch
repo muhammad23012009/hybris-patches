@@ -1,21 +1,22 @@
-From 564473fcfd2b8c1c285e00e0e30ab24d4974cbdb Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com>
 Date: Thu, 13 Aug 2015 19:03:29 +0200
-Subject: [PATCH 2/2] Fix bugs and add traces for trust-store support
+Subject: [PATCH] Fix bugs and add traces for trust-store support
 
 Change-Id: I774d73d1cf8a05e5704e62736a155cac2edcd8ab
 ---
- .../camera/libcameraservice/CameraService.cpp | 64 ++++++++++++++++---
- 1 file changed, 56 insertions(+), 8 deletions(-)
+ .../camera/libcameraservice/CameraService.cpp | 65 ++++++++++++++++---
+ 1 file changed, 56 insertions(+), 9 deletions(-)
 
 diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
-index 63e8c98..27cb6c3 100644
+index 9660924ec6..79f6d2a82b 100644
 --- a/services/camera/libcameraservice/CameraService.cpp
 +++ b/services/camera/libcameraservice/CameraService.cpp
-@@ -21,15 +21,19 @@
+@@ -21,16 +21,19 @@
  #include <algorithm>
  #include <climits>
  #include <stdio.h>
+-#include <cstdlib>
 +#include <errno.h>
 +#include <string.h>
  #include <cstring>
@@ -32,7 +33,7 @@ index 63e8c98..27cb6c3 100644
  
  #include <android-base/macros.h>
  #include <android-base/parseint.h>
-@@ -117,6 +121,19 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -117,6 +120,19 @@ struct TrustAgentRegistry : public android::Thread,
      {
          static const int socketErrorCode = -1;
  
@@ -52,7 +53,7 @@ index 63e8c98..27cb6c3 100644
          // We create a unix domain socket
          socketFd = ::socket(PF_UNIX, SOCK_STREAM, 0);
  
-@@ -139,7 +156,7 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -139,7 +155,7 @@ struct TrustAgentRegistry : public android::Thread,
  
          // And bind to the endpoint in the filesystem.
          static const int bindErrorCode = -1;
@@ -61,7 +62,7 @@ index 63e8c98..27cb6c3 100644
  
          if (rc == bindErrorCode)
          {
-@@ -192,6 +209,8 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -192,6 +208,8 @@ struct TrustAgentRegistry : public android::Thread,
          static const int keepOn = 1;
          static const int bailOut = 0;
  
@@ -70,7 +71,7 @@ index 63e8c98..27cb6c3 100644
          if (fd != socketFd)
              return keepOn;
  
-@@ -226,6 +245,7 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -226,6 +244,7 @@ struct TrustAgentRegistry : public android::Thread,
              ALOGE("Could not query peer credentials");
          } else
          {
@@ -78,27 +79,27 @@ index 63e8c98..27cb6c3 100644
              android::AutoMutex am(remoteAgentsGuard);
              remoteAgents.add(peerCredentials.uid, connectionFd);
          }
-@@ -236,9 +256,17 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -236,9 +255,17 @@ struct TrustAgentRegistry : public android::Thread,
      // From android::Thread
      bool threadLoop()
      {
 -        static const int timeoutInMs = 5000;
 +        static const int timeoutInMs = -1;
 +        int res;
- 
--        looper->pollOnce(timeoutInMs);
++
 +        ALOGD("%s start", __PRETTY_FUNCTION__);
 +
 +        do {
 +            res = looper->pollOnce(timeoutInMs);
 +            ALOGD("%s res %d", __PRETTY_FUNCTION__, res);
 +        } while(res != ALOOPER_POLL_ERROR);
-+
+ 
+-        looper->pollOnce(timeoutInMs);
 +        ALOGD("%s exit", __PRETTY_FUNCTION__);
  
          return exitPending();
      }
-@@ -247,25 +275,40 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -247,25 +274,40 @@ struct TrustAgentRegistry : public android::Thread,
      {
          int socket = -1;
  
@@ -143,7 +144,7 @@ index 63e8c98..27cb6c3 100644
  
          return answerFromSocket == granted;
      }
-@@ -274,6 +317,7 @@ struct TrustAgentRegistry : public android::Thread,
+@@ -274,6 +316,7 @@ struct TrustAgentRegistry : public android::Thread,
      android::sp<android::Looper> looper;
      android::Mutex remoteAgentsGuard;
      android::KeyedVector<uid_t, int> remoteAgents;
@@ -151,7 +152,7 @@ index 63e8c98..27cb6c3 100644
  };
  
  android::sp<TrustAgentRegistry> trust_agent_registry(new TrustAgentRegistry("/dev/socket/camera_service/camera_service_to_trust"));
-@@ -1343,7 +1387,11 @@ Status CameraService::validateClientPermissionsLocked(const String8& cameraId,
+@@ -1375,7 +1418,11 @@ Status CameraService::validateClientPermissionsLocked(const String8& cameraId,
          // verify that the app with uid and pid is allowed to access the
          // camera.
          if (!trust_agent_registry->verifyConnectRequestFor(clientUid, callingPid))
@@ -165,5 +166,5 @@ index 63e8c98..27cb6c3 100644
          ALOGE("CameraService::connect X (calling PID %d, calling UID %d) rejected "
                  "(don't trust clientUid %d)", callingPid, callingUid, clientUid);
 -- 
-2.32.1 (Apple Git-133)
+2.25.1
 

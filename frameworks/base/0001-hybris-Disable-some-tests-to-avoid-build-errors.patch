@@ -12,18 +12,17 @@ they need are disabled in the build system to minimize the build process.
 Change-Id: I14adf0fe1015491ac9d2ad8b2f7a570c695f2690
 Signed-off-by: Björn Bidar <theodorstormgrade@gmail.com>
 ---
- .../Android.mk                                | 23 -------------------
- 1 file changed, 23 deletions(-)
+ .../Android.mk                                | 24 +------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
 
 diff --git a/core/tests/hosttests/test-apps/MultiDexLegacyTestAppWithCorruptedDex/Android.mk b/core/tests/hosttests/test-apps/MultiDexLegacyTestAppWithCorruptedDex/Android.mk
-index a6f87ea2e5d..40c005e8e63 100644
+index 33a46ea980c1..01c43e40958a 100644
 --- a/core/tests/hosttests/test-apps/MultiDexLegacyTestAppWithCorruptedDex/Android.mk
 +++ b/core/tests/hosttests/test-apps/MultiDexLegacyTestAppWithCorruptedDex/Android.mk
-@@ -13,26 +13,3 @@
- # limitations under the License.
+@@ -14,28 +14,6 @@
  
  LOCAL_PATH:= $(call my-dir)
--
+ 
 -include $(CLEAR_VARS)
 -
 -LOCAL_MODULE_TAGS := tests
@@ -33,6 +32,9 @@ index a6f87ea2e5d..40c005e8e63 100644
 -LOCAL_SDK_VERSION := 18
 -
 -LOCAL_PACKAGE_NAME := MultiDexLegacyTestApp_corrupted
+ LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
+ LOCAL_LICENSE_CONDITIONS := notice
+-LOCAL_NOTICE_FILE  := $(LOCAL_PATH)/../../../../../NOTICE
 -
 -LOCAL_STATIC_JAVA_LIBRARIES := android-support-multidex
 -
@@ -46,6 +48,8 @@ index a6f87ea2e5d..40c005e8e63 100644
 -	$(hide) touch $@
 -
 -$(LOCAL_BUILT_MODULE): $(corrupted_classes2_dex)
++LOCAL_NOTICE_FILE  := $(LOCAL_PATH)/../../../../../NOTICE
+\ No newline at end of file
 -- 
-2.31.1
+2.25.1
 

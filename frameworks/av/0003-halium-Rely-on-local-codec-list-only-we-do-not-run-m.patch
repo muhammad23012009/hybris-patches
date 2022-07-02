@@ -10,10 +10,10 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/media/libstagefright/MediaCodecList.cpp b/media/libstagefright/MediaCodecList.cpp
-index ac54fa1912..5abb5b679a 100644
+index 6243828e42..08240ef954 100644
 --- a/media/libstagefright/MediaCodecList.cpp
 +++ b/media/libstagefright/MediaCodecList.cpp
-@@ -180,7 +180,7 @@ void MediaCodecList::BinderDeathObserver::binderDied(const wp<IBinder> &who __un
+@@ -181,7 +181,7 @@ void MediaCodecList::BinderDeathObserver::binderDied(const wp<IBinder> &who __un
  
  // static
  sp<IMediaCodecList> MediaCodecList::getInstance() {
@@ -22,7 +22,7 @@ index ac54fa1912..5abb5b679a 100644
      if (sRemoteList == nullptr) {
          sMediaPlayer = defaultServiceManager()->getService(String16("media.player"));
          sp<IMediaPlayerService> service =
-@@ -198,6 +198,8 @@ sp<IMediaCodecList> MediaCodecList::getInstance() {
+@@ -199,6 +199,8 @@ sp<IMediaCodecList> MediaCodecList::getInstance() {
          }
      }
      return sRemoteList;
@@ -32,5 +32,5 @@ index ac54fa1912..5abb5b679a 100644
  
  MediaCodecList::MediaCodecList(std::vector<MediaCodecListBuilderBase*> builders) {
 -- 
-2.31.1
+2.25.1
 

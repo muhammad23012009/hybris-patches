@@ -9,7 +9,7 @@ Change-Id: Ida8e91453db58b1123468931c94d4a40d273b0b3
  1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/cmds/servicemanager/Access.cpp b/cmds/servicemanager/Access.cpp
-index b7e520f2f..be3cf78a3 100644
+index b7e520f2f1..be3cf78a39 100644
 --- a/cmds/servicemanager/Access.cpp
 +++ b/cmds/servicemanager/Access.cpp
 @@ -33,6 +33,9 @@ constexpr bool kIsVendor = false;
@@ -56,5 +56,5 @@ index b7e520f2f..be3cf78a3 100644
      if (selabel_lookup(getSehandle(), &tctx, name.c_str(), SELABEL_CTX_ANDROID_SERVICE) != 0) {
          LOG(ERROR) << "SELinux: No match for " << name << " in service_contexts.\n";
 -- 
-2.31.1
+2.25.1
 

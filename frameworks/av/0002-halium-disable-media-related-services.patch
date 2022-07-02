@@ -23,7 +23,7 @@ index 8f51458d7f..d1176ab823 100644
      user cameraserver
      group audio camera input drmrpc
 diff --git a/media/audioserver/audioserver.rc b/media/audioserver/audioserver.rc
-index f75e4c7a9b..4dd7b6f1da 100644
+index c4a6601fd1..909d63deca 100644
 --- a/media/audioserver/audioserver.rc
 +++ b/media/audioserver/audioserver.rc
 @@ -1,4 +1,4 @@
@@ -50,5 +50,5 @@ index 05373c9c3f..b6f0558596 100644
 +    task_profiles ProcessCapacityHigh HighPerformance
 \ No newline at end of file
 -- 
-2.31.1
+2.25.1
 

@@ -8,23 +8,23 @@ Include only libs other native components depend on, such as icu
 
 Change-Id: I34850535fe13a07354fdbd82d0f2bbbbc0336f6f
 ---
- build/apex/Android.bp | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ build/apex/Android.bp | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/build/apex/Android.bp b/build/apex/Android.bp
-index 22510ef5df..3b3b778fc7 100644
+index c5acc915d4..38193bac88 100644
 --- a/build/apex/Android.bp
 +++ b/build/apex/Android.bp
-@@ -211,6 +211,7 @@ apex_defaults {
-     name: "com.android.art-defaults",
+@@ -238,7 +238,6 @@ apex_defaults {
+     defaults: ["com.android.art-defaults"],
      compile_multilib: "both",
      manifest: "manifest-art.json",
-+    /* Disabled in Halium
+-    bootclasspath_fragments: ["art-bootclasspath-fragment"],
+     compat_configs: ["libcore-platform-compat-config"],
      java_libs: libcore_java_libs,
      native_shared_libs: art_runtime_base_native_shared_libs +
-         art_runtime_base_native_device_only_shared_libs +
-@@ -228,7 +229,16 @@ apex_defaults {
-             binaries: art_tools_common_binaries +
+@@ -254,7 +253,16 @@ apex_defaults {
+                 art_tools_common_binaries +
                  art_tools_device_only_binaries,
          },
 -    },
@@ -38,26 +38,18 @@ index 22510ef5df..3b3b778fc7 100644
 +        "libicuuc",
 +        "libnativehelper",
 +    ],
-     prebuilts: ["com.android.art.ld.config.txt"],
      key: "com.android.art.key",
      required: [
-@@ -241,6 +251,7 @@ apex_defaults {
- apex_defaults {
-     name: "com.android.art-dev-defaults",
-     defaults: ["com.android.art-defaults"],
-+    /* Disabled in Halium
-     native_shared_libs: art_runtime_base_native_device_only_debug_shared_libs +
-         art_runtime_run_test_libs +
-         art_runtime_debug_native_shared_libs +
-@@ -257,7 +268,7 @@ apex_defaults {
-             binaries: art_tools_debug_binaries +
+         "com.android.i18n",
+@@ -295,7 +303,7 @@ apex_defaults {
+                 art_tools_debug_binaries +
                  art_tools_debug_device_only_binaries,
          },
 -    },
 +    },*/
  }
  
- // Release version of the ART APEX module (not containing debug
+ apex_test {
 -- 
-2.33.0
+2.25.1
 

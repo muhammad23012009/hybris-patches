@@ -13,12 +13,12 @@ Change-Id: I8445a6613a471444d5aace295ce049e3b88e19ed
  1 file changed, 6 insertions(+)
 
 diff --git a/init/property_service.cpp b/init/property_service.cpp
-index 4b515d4..c4fedbf 100644
+index 5e9d8d05f..f8bd9ad4c 100644
 --- a/init/property_service.cpp
 +++ b/init/property_service.cpp
-@@ -906,6 +906,12 @@ void PropertyLoadBootDefaults() {
-     load_properties_from_file("/product/build.prop", nullptr, &properties);
-     load_properties_from_file("/factory/factory.prop", "ro.*", &properties);
+@@ -1091,6 +1091,12 @@ void PropertyLoadBootDefaults() {
+     load_properties_from_partition("odm", /* support_legacy_path_until */ 28);
+     load_properties_from_partition("product", /* support_legacy_path_until */ 30);
  
 +    // Halium: load properties from prop.halium last for overrides
 +    if (!load_properties_from_file("/system/etc/prop.halium", nullptr, &properties)) {
@@ -29,3 +29,6 @@ index 4b515d4..c4fedbf 100644
      if (access(kDebugRamdiskProp, R_OK) == 0) {
          LOG(INFO) << "Loading " << kDebugRamdiskProp;
          load_properties_from_file(kDebugRamdiskProp, nullptr, &properties);
+-- 
+2.25.1
+
