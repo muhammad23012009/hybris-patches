@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Mon, 4 Jul 2022 16:09:29 +0200
+Subject: [PATCH] (halium) system/core: make sure we can write to all the
+ partitions in recovery
+
+Change-Id: Ied66c078460bbfdfb02495adcd50dc34973bad8b
+---
+ fs_mgr/fs_mgr_dm_linear.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/fs_mgr/fs_mgr_dm_linear.cpp b/fs_mgr/fs_mgr_dm_linear.cpp
+index 9046132..8cbcfd9 100644
+--- a/fs_mgr/fs_mgr_dm_linear.cpp
++++ b/fs_mgr/fs_mgr_dm_linear.cpp
+@@ -240,6 +240,9 @@ bool CreateLogicalPartition(CreateLogicalPartitionParams params, std::string* pa
+         return false;
+     }
+ 
++    // Halium: make sure we can write to all the partitions in recovery
++    table.set_readonly(false);
++
+     DeviceMapper& dm = DeviceMapper::Instance();
+     if (!dm.CreateDevice(params.device_name, table, path, params.timeout_ms)) {
+         return false;
+-- 
+2.37.0
+
