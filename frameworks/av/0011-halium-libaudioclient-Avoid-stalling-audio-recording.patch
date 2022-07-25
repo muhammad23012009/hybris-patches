@@ -1,0 +1,56 @@
+From 28a83e127a8fc3b29885137b399944350d379311 Mon Sep 17 00:00:00 2001
+From: Alfred Neumayer <dev.beidl@gmail.com>
+Date: Mon, 25 Jul 2022 13:32:52 +0200
+Subject: [PATCH] (halium) libaudioclient: Avoid stalling audio recording on
+ SCHED_* checks
+
+libaudioclient (responsible for polling buffers from micshm) waits up to half
+a second on checking whether real-time scheduling priority has been set or not.
+
+This has the unfortunate side-effect of stalling the audio record pipeline
+for as long as the check is done, over and over again, causing A/V desync.
+
+Remove the check altogether as there is no reason to stall audio recording
+while MPEG4Writer is doing its job fine. If the priority is set, it's set.
+If not, tough.
+
+Change-Id: I0d8ea7a812c2f15ba279bda0750448f2912e5555
+---
+ media/libaudioclient/AudioRecord.cpp | 21 ---------------------
+ 1 file changed, 21 deletions(-)
+
+diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
+index ebd28c5..22d45db 100644
+--- a/media/libaudioclient/AudioRecord.cpp
++++ b/media/libaudioclient/AudioRecord.cpp
+@@ -1016,27 +1016,6 @@ ssize_t AudioRecord::read(void* buffer, size_t userSize, bool blocking)
+ nsecs_t AudioRecord::processAudioBuffer()
+ {
+     mLock.lock();
+-    if (mAwaitBoost) {
+-        mAwaitBoost = false;
+-        mLock.unlock();
+-        static const int32_t kMaxTries = 5;
+-        int32_t tryCounter = kMaxTries;
+-        uint32_t pollUs = 10000;
+-        do {
+-            int policy = sched_getscheduler(0) & ~SCHED_RESET_ON_FORK;
+-            if (policy == SCHED_FIFO || policy == SCHED_RR) {
+-                break;
+-            }
+-            usleep(pollUs);
+-            pollUs <<= 1;
+-        } while (tryCounter-- > 0);
+-        if (tryCounter < 0) {
+-            ALOGE("did not receive expected priority boost on time");
+-        }
+-        // Run again immediately
+-        return 0;
+-    }
+-
+     // Can only reference mCblk while locked
+     int32_t flags = android_atomic_and(~CBLK_OVERRUN, &mCblk->mFlags);
+ 
+-- 
+2.32.1 (Apple Git-133)
+
