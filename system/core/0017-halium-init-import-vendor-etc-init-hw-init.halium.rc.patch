@@ -1,0 +1,29 @@
+From 015f04d8d48bcda13ef3142567eb11f8bc46e489 Mon Sep 17 00:00:00 2001
+From: Alexander Martinz <amartinz@shiftphones.com>
+Date: Wed, 19 Oct 2022 13:46:12 +0200
+Subject: [PATCH] (halium) init: import /vendor/etc/init/hw/init.halium.rc
+
+This is helpful for GSI devices, which do not want to overwrite
+vendor init files but instead extend them.
+
+Change-Id: Iafe7e715267488793663b71757f0e294f8af603e
+Signed-off-by: Alexander Martinz <amartinz@shiftphones.com>
+---
+ rootdir/init.rc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/rootdir/init.rc b/rootdir/init.rc
+index 5a42bfce98..7a908d0e28 100644
+--- a/rootdir/init.rc
++++ b/rootdir/init.rc
+@@ -7,6 +7,7 @@
+ import /init.environ.rc
+ # Disabled for Halium
+ #import /init.usb.rc
++import /vendor/etc/init/hw/init.halium.rc
+ import /init.${ro.hardware}.rc
+ import /vendor/etc/init/hw/init.${ro.hardware}.rc
+ # Disabled for Halium
+-- 
+2.38.0
+
