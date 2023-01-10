@@ -20,10 +20,10 @@ Change-Id: Ia2bd665391bd94cb7fb988860b8cfe3868db01a8
  1 file changed, 20 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index 1e281b77aa..5fd6875b21 100644
+index f613cef289..60ad5baa79 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -1138,26 +1138,6 @@ ssize_t AudioRecord::read(void* buffer, size_t userSize, bool blocking)
+@@ -1182,26 +1182,6 @@ ssize_t AudioRecord::read(void* buffer, size_t userSize, bool blocking)
  nsecs_t AudioRecord::processAudioBuffer()
  {
      mLock.lock();

@@ -1,7 +1,8 @@
-From 644536888f75aa0a5a7056915314cad19ab3a306 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Alfred Neumayer <dev.beidl@gmail.com>
 Date: Mon, 4 Jul 2022 14:33:20 +0200
-Subject: [PATCH] e2fsck & misc: Build some components for recovery ramdisk
+Subject: [PATCH] (halium) e2fsck & misc: Build some components for recovery
+ ramdisk
 
 Allows e2fsck & tune2fs to be included in the recovery.
 
@@ -13,29 +14,29 @@ Change-Id: I668c4440b9d3825eb279741b6250f09473e0f4d1
  2 files changed, 2 insertions(+)
 
 diff --git a/e2fsck/Android.bp b/e2fsck/Android.bp
-index d4326e5..07c979d 100644
+index 166d765..dc608e7 100644
 --- a/e2fsck/Android.bp
 +++ b/e2fsck/Android.bp
-@@ -53,6 +53,7 @@ e2fsck_libs = [
+@@ -64,6 +64,7 @@ e2fsck_libs = [
  cc_binary {
      name: "e2fsck",
      host_supported: true,
 +    recovery_available: true,
+     vendor_ramdisk_available: true,
      defaults: ["e2fsck-defaults"],
  
-     shared_libs: e2fsck_libs,
 diff --git a/misc/Android.bp b/misc/Android.bp
-index a93bea4..5e24723 100644
+index ca4267b..a368724 100644
 --- a/misc/Android.bp
 +++ b/misc/Android.bp
-@@ -129,6 +129,7 @@ tune2fs_libs = [
+@@ -141,6 +141,7 @@ tune2fs_libs = [
  cc_binary {
      name: "tune2fs",
      host_supported: true,
 +    recovery_available: true,
+     vendor_ramdisk_available: true,
      defaults: ["tune2fs-defaults"],
  
-     shared_libs: tune2fs_libs,
 -- 
-2.32.1 (Apple Git-133)
+2.39.1
 
