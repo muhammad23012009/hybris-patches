@@ -8,22 +8,37 @@ Include only libs other native components depend on, such as icu
 
 Change-Id: I34850535fe13a07354fdbd82d0f2bbbbc0336f6f
 ---
- build/apex/Android.bp | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ Android.mk            |  3 +++
+ build/apex/Android.bp | 12 ++++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
+diff --git a/Android.mk b/Android.mk
+index 09cf3f23b..f538e5a3c 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -445,6 +445,9 @@ LOCAL_REQUIRED_MODULES += \
+ endif
+ endif
+ 
++# Halium: remove art-runtime dependencies to minify build
++LOCAL_REQUIRED_MODULES :=
++
+ art_module_lib :=
+ art_module_debug_lib :=
+ 
 diff --git a/build/apex/Android.bp b/build/apex/Android.bp
-index c5acc915d4..38193bac88 100644
+index c5acc915d..7831bc9af 100644
 --- a/build/apex/Android.bp
 +++ b/build/apex/Android.bp
-@@ -238,7 +238,6 @@ apex_defaults {
-     defaults: ["com.android.art-defaults"],
-     compile_multilib: "both",
+@@ -240,6 +240,7 @@ apex_defaults {
      manifest: "manifest-art.json",
--    bootclasspath_fragments: ["art-bootclasspath-fragment"],
+     bootclasspath_fragments: ["art-bootclasspath-fragment"],
      compat_configs: ["libcore-platform-compat-config"],
++    /* Disabled in Halium
      java_libs: libcore_java_libs,
      native_shared_libs: art_runtime_base_native_shared_libs +
-@@ -254,7 +253,16 @@ apex_defaults {
+         art_runtime_base_native_device_only_shared_libs +
+@@ -254,7 +255,13 @@ apex_defaults {
                  art_tools_common_binaries +
                  art_tools_device_only_binaries,
          },
@@ -31,16 +46,21 @@ index c5acc915d4..38193bac88 100644
 +    },*/
 +    // Halium: build only libs other native components depend on
 +    native_shared_libs: [
-+        "libandroidicu",
 +        "libandroidio",
 +        "libexpat",
-+        "libicui18n",
-+        "libicuuc",
 +        "libnativehelper",
 +    ],
      key: "com.android.art.key",
      required: [
          "com.android.i18n",
+@@ -281,6 +288,7 @@ apex_defaults {
+ apex_defaults {
+     name: "com.android.art-devel-defaults",
+     defaults: ["com.android.art-device-defaults"],
++    /* Disabled in Halium
+     native_shared_libs: art_runtime_base_native_device_only_debug_shared_libs +
+         art_runtime_run_test_libs +
+         art_runtime_debug_native_shared_libs +
 @@ -295,7 +303,7 @@ apex_defaults {
                  art_tools_debug_binaries +
                  art_tools_debug_device_only_binaries,
@@ -50,6 +70,3 @@ index c5acc915d4..38193bac88 100644
  }
  
  apex_test {
--- 
-2.25.1
-
