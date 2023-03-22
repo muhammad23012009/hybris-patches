@@ -1,0 +1,39 @@
+From 87e2e708c20bf031fbec55392f191a79eeced210 Mon Sep 17 00:00:00 2001
+From: TheKit <nekit1000@gmail.com>
+Date: Mon, 20 Mar 2023 18:30:57 +0000
+Subject: [PATCH] (halium) libprocessgroup: fix mounting cpu/cpuacct on systemd
+ hosts
+
+systemd with cgroup v1 mounts cpu and cpuacct controllers together.
+As result, libprocessgroup's attempt to mount them independently will fail.
+If this happens, retry and mount cpu and cpuacct combined instead.
+
+Change-Id: I7893b0a809dffec49c15f36621363552d2e08667
+---
+ libprocessgroup/setup/cgroup_map_write.cpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/libprocessgroup/setup/cgroup_map_write.cpp b/libprocessgroup/setup/cgroup_map_write.cpp
+index 25f16a6..e952664 100644
+--- a/libprocessgroup/setup/cgroup_map_write.cpp
++++ b/libprocessgroup/setup/cgroup_map_write.cpp
+@@ -291,6 +291,16 @@ static bool SetupCgroup(const CgroupDescriptor& descriptor) {
+             result = mount("none", controller->path(), "cgroup", MS_NODEV | MS_NOEXEC | MS_NOSUID,
+                            controller->name());
+         }
++
++        // Halium: systemd with cgroup v1 mounts cpu and cpuacct controllers together.
++        // As result, libprocessgroup's attempt to mount them independently will fail.
++        // If this happens, retry and mount cpu and cpuacct together.
++        if (result < 0 &&
++            (!strcmp(controller->name(), "cpu") || !strcmp(controller->name(), "cpuacct"))) {
++            // mount cgroup none <path> nodev noexec nosuid <controller>
++            result = mount("none", controller->path(), "cgroup", MS_NODEV | MS_NOEXEC | MS_NOSUID,
++                           "cpu,cpuacct");
++        }
+     }
+ 
+     if (result < 0) {
+-- 
+2.39.1
+
