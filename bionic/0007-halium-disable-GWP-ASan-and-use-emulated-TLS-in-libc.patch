@@ -1,37 +1,37 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 09e7cfa2d4e361a5adb76ad98fbfc802d094f54a Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
-Date: Mon, 30 Aug 2021 00:03:52 +0300
+Date: Fri, 21 Apr 2023 10:35:49 +0500
 Subject: [PATCH] (halium) disable GWP-ASan and use emulated TLS in libc by
  default
 
 Building locale.cpp with platform TLS and disabled direct TLS slot
 usage in earlier patch breaks linker compiled as static binary.
 
-Change-Id: Ic63b814917913ba6055aa9ba2c8e70c098b428af
+Change-Id: Id32a4b6624940f3130b1200bb4b2ef836130876b
 ---
  libc/Android.bp                   |  3 ++-
- libc/bionic/gwp_asan_wrappers.cpp | 17 +++++++++++++++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ libc/bionic/gwp_asan_wrappers.cpp | 19 +++++++++++++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/libc/Android.bp b/libc/Android.bp
-index baa989dc8..101491446 100644
+index 544a1e0..7bf70c6 100644
 --- a/libc/Android.bp
 +++ b/libc/Android.bp
-@@ -68,7 +68,8 @@ libc_common_flags = [
+@@ -67,7 +67,8 @@ libc_common_flags = [
      "-Wexit-time-destructors",
  
      // GWP-ASan requires platform TLS.
 -    "-fno-emulated-tls",
 +    // Halium: ELF TLS currently breaks libhybris, so disable it
 +    "-femulated-tls",
- ]
  
- // Define some common cflags
+     // We know clang does a lot of harm by rewriting what we've said, and sadly
+     // never see any good it does, so let's just ask it to do what we say...
 diff --git a/libc/bionic/gwp_asan_wrappers.cpp b/libc/bionic/gwp_asan_wrappers.cpp
-index 6eb17495a..c1d150ad7 100644
+index fc59c88..44f5fde 100644
 --- a/libc/bionic/gwp_asan_wrappers.cpp
 +++ b/libc/bionic/gwp_asan_wrappers.cpp
-@@ -46,6 +46,7 @@
+@@ -53,6 +53,7 @@
  #include "bionic/malloc_common_dynamic.h"
  #endif  // LIBC_STATIC
  
@@ -39,18 +39,17 @@ index 6eb17495a..c1d150ad7 100644
  static gwp_asan::GuardedPoolAllocator GuardedAlloc;
  static const MallocDispatch* prev_dispatch;
  
-@@ -277,3 +278,19 @@ bool MaybeInitGwpAsan(libc_globals* globals, bool force_init) {
- bool DispatchIsGwpAsan(const MallocDispatch* dispatch) {
+@@ -423,6 +424,24 @@ bool DispatchIsGwpAsan(const MallocDispatch* dispatch) {
    return dispatch == &gwp_asan_dispatch;
  }
-+
+ 
 +#else // DISABLED_FOR_HYBRIS_SUPPORT
 +
 +bool MaybeInitGwpAsanFromLibc(libc_globals* /*globals*/) {
 +  return false;
 +}
 +
-+bool MaybeInitGwpAsan(libc_globals* /*globals*/, bool /*force_init*/) {
++bool MaybeInitGwpAsan(libc_globals* /*globals*/, const android_mallopt_gwp_asan_options_t& /*force_init*/) {
 +  return false;
 +}
 +
@@ -58,7 +57,13 @@ index 6eb17495a..c1d150ad7 100644
 +  return false;
 +}
 +
++bool GwpAsanInitialized = false;
++
 +#endif // DISABLED_FOR_HYBRIS_SUPPORT
++
+ bool EnableGwpAsan(const android_mallopt_gwp_asan_options_t& options) {
+   if (GwpAsanInitialized) {
+     return true;
 -- 
-2.25.1
+2.39.2
 

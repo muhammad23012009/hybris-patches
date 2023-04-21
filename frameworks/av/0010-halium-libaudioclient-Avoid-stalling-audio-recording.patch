@@ -1,4 +1,4 @@
-From 938305e7aa27bd3cb03e0b5242db02ba415d4dd6 Mon Sep 17 00:00:00 2001
+From a892c7d1908d339338fae9cc6b5dc2044a4dc1f2 Mon Sep 17 00:00:00 2001
 From: Alfred Neumayer <dev.beidl@gmail.com>
 Date: Sat, 4 Feb 2023 14:18:08 +0100
 Subject: [PATCH] (halium) libaudioclient: Avoid stalling audio recording on 
@@ -14,19 +14,19 @@ Remove the check altogether as there is no reason to stall audio recording
 while MPEG4Writer is doing its job fine. If the priority is set, it's set.
 If not, tough
 
-Change-Id: Ia2bd665391bd94cb7fb988860b8cfe3868db01a8
+Change-Id: I1ecbdd5a807c310cb6e0f8ef0a9e1dfaa2a86ec2
 ---
  media/libaudioclient/AudioRecord.cpp | 20 --------------------
  1 file changed, 20 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index f613cef289..60ad5baa79 100644
+index e06e33a..50067a1 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -1182,26 +1182,6 @@ ssize_t AudioRecord::read(void* buffer, size_t userSize, bool blocking)
- nsecs_t AudioRecord::processAudioBuffer()
- {
-     mLock.lock();
+@@ -1344,26 +1344,6 @@ nsecs_t AudioRecord::processAudioBuffer()
+         mLock.unlock();
+         return NS_NEVER;
+     }
 -    if (mAwaitBoost) {
 -        mAwaitBoost = false;
 -        mLock.unlock();
@@ -51,5 +51,5 @@ index f613cef289..60ad5baa79 100644
      // Can only reference mCblk while locked
      int32_t flags = android_atomic_and(~CBLK_OVERRUN, &mCblk->mFlags);
 -- 
-2.39.1
+2.41.0
 

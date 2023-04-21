@@ -1,26 +1,26 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From d09da23ac3a2bdd7853ed6c5b60f59c6172b8257 Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
-Date: Tue, 10 Jan 2023 13:57:11 +0000
+Date: Fri, 21 Apr 2023 14:38:12 +0500
 Subject: [PATCH] (halium) libpowermanager: statically link
  android.hardware.power
 
 A hack to get libmediandk with Halium changes that pull in
 libpowermanager to compile without violating APEX boundaries.
 
-Change-Id: Ie7505c96a0c3b32f787c2c597855b63399101c73
+Change-Id: I7c5999dd0ec7dc9e063aa3b4f893055a19d99676
 ---
  services/powermanager/Android.bp | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/services/powermanager/Android.bp b/services/powermanager/Android.bp
-index d828aa97a..7f2dce418 100644
+index 6fbba3f..a395436 100644
 --- a/services/powermanager/Android.bp
 +++ b/services/powermanager/Android.bp
 @@ -33,9 +33,14 @@ cc_library_shared {
  
      shared_libs: [
          "libbinder",
-+        "libcutils",
++	"libcutils",
          "libhidlbase",
          "liblog",
          "libutils",
@@ -30,4 +30,7 @@ index d828aa97a..7f2dce418 100644
 +    static_libs: [
          "android.hardware.power@1.0",
          "android.hardware.power@1.1",
-         "android.hardware.power-V2-cpp",
+         "android.hardware.power-V3-cpp",
+-- 
+2.39.2
+

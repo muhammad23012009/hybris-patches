@@ -1,38 +1,33 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 89d85090108fa67e1964f63f4c34480db6d48531 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Matti=20Lehtim=C3=A4ki?= <matti.lehtimaki@gmail.com>
-Date: Thu, 13 Jul 2017 00:53:55 +0300
+Date: Fri, 21 Apr 2023 14:26:31 +0500
 Subject: [PATCH] (hybris) Use mini services and disable starting unneeded
  services.
 
-Change-Id: I6e80eb3e2d92ddfbd83f1933971c3f24e9570d28
+Change-Id: I25030a53012639d30d25c9b52cae662195aa3d14
 ---
- cmds/servicemanager/servicemanager.rc | 29 ++++++++++++++++++++++++---
- 1 file changed, 26 insertions(+), 3 deletions(-)
+ cmds/servicemanager/servicemanager.rc | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/cmds/servicemanager/servicemanager.rc b/cmds/servicemanager/servicemanager.rc
-index 6d5070fa04..84dc28a693 100644
+index e5d689f..b7bfd55 100644
 --- a/cmds/servicemanager/servicemanager.rc
 +++ b/cmds/servicemanager/servicemanager.rc
-@@ -4,10 +4,33 @@ service servicemanager /system/bin/servicemanager
+@@ -3,11 +3,27 @@ service servicemanager /system/bin/servicemanager
+     user system
      group system readproc
      critical
-     onrestart restart apexd
+-    onrestart restart apexd
 -    onrestart restart audioserver
 -    onrestart restart gatekeeperd
--    onrestart class_restart main
-+    #onrestart restart zygote
+-    onrestart class_restart --only-enabled main
++    #onrestart restart apexd
 +    #onrestart restart audioserver
-+    #onrestart restart media
-+    #onrestart restart surfaceflinger
-+    #onrestart restart inputflinger
-+    #onrestart restart drm
-+    #onrestart restart cameraserver
-+    #onrestart restart keystore
 +    #onrestart restart gatekeeperd
-+    #onrestart restart thermalservice
-     onrestart class_restart hal
-     onrestart class_restart early_hal
-     writepid /dev/cpuset/system-background/tasks
++    #onrestart class_restart --only-enabled main
+     onrestart class_restart --only-enabled hal
+     onrestart class_restart --only-enabled early_hal
+     task_profiles ServiceCapacityLow
      shutdown critical
 +
 +service minimedia /system/bin/minimediaservice
@@ -51,5 +46,5 @@ index 6d5070fa04..84dc28a693 100644
 +    user system
 +    group audio
 -- 
-2.25.1
+2.39.2
 

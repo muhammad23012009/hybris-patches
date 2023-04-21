@@ -1,48 +1,49 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From f1cee90f95e2e5b74b92a6d94587f10b656aca23 Mon Sep 17 00:00:00 2001
 From: Asriel Dreemurr <asriel.danctnix@gmail.com>
-Date: Sun, 18 Oct 2020 00:31:45 +0700
+Date: Fri, 21 Apr 2023 15:03:53 +0500
 Subject: [PATCH] (halium) init: start inside LXC container without SELinux
 
 amartinz: keep first stage init setup for recovery, otherwise
 recovery will not boot.
 
+Change-Id: Ie8922bfdeca246a52f60808fb9b0500e37805217
 Signed-off-by: Alexander Martinz <alex@amartinz.at>
 Signed-off-by: Eugenio Paolantonio (g7) <me@medesimo.eu>
 ---
  init/Android.bp           |  2 ++
- init/first_stage_init.cpp | 51 ++++++++++++++++++++++++++++-----------
- init/init.cpp             |  8 +++++-
- init/property_service.cpp | 24 +++++++++++-------
- init/service.cpp          | 10 +++++---
+ init/first_stage_init.cpp | 49 ++++++++++++++++++++++++++++-----------
+ init/init.cpp             |  7 +++++-
+ init/property_service.cpp | 23 +++++++++++-------
+ init/service.cpp          | 15 +++++++-----
  init/subcontext.cpp       |  3 ++-
  init/util.cpp             | 18 ++++++++------
- 7 files changed, 80 insertions(+), 36 deletions(-)
+ 7 files changed, 80 insertions(+), 37 deletions(-)
 
 diff --git a/init/Android.bp b/init/Android.bp
-index 00ac6a752..fc55ee4aa 100644
+index 3df0e91..2fae29d 100644
 --- a/init/Android.bp
 +++ b/init/Android.bp
 @@ -119,6 +119,7 @@ libinit_cc_defaults {
          "-Wall",
          "-Wextra",
          "-Wno-unused-parameter",
-+        "-Wno-unused-function",
++	"-Wno-unused-function",
          "-Werror",
          "-Wthread-safety",
          "-DALLOW_FIRST_STAGE_CONSOLE=0",
-@@ -503,6 +504,7 @@ cc_binary {
+@@ -378,6 +379,7 @@ cc_binary {
          "-Wall",
          "-Wextra",
          "-Wno-unused-parameter",
-+        "-Wno-unused-function",
++	"-Wno-unused-function",
          "-Werror",
-     ],
-     static_libs: [
+         "-DALLOW_FIRST_STAGE_CONSOLE=0",
+         "-DALLOW_LOCAL_PROP_OVERRIDE=0",
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index c7b7b0c13..5ae749c42 100644
+index d050ed7..284a9af 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -198,14 +198,23 @@ int FirstStageMain(int argc, char** argv) {
+@@ -233,14 +233,22 @@ int FirstStageMain(int argc, char** argv) {
      CHECKCALL(setenv("PATH", _PATH_DEFPATH, 1));
      // Get the basic filesystem setup we need put together in the initramdisk
      // on / and then we'll let the rc file figure out the rest.
@@ -51,7 +52,6 @@ index c7b7b0c13..5ae749c42 100644
 -    CHECKCALL(mkdir("/dev/socket", 0755));
 -    CHECKCALL(mkdir("/dev/dm-user", 0755));
 -    CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
-+
 +    // We need to disable certain things for Halium while the recovery needs it.
 +    bool is_recovery = IsRecoveryMode();
 +
@@ -65,14 +65,14 @@ index c7b7b0c13..5ae749c42 100644
 +        CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
  #define MAKE_STR(x) __STRING(x)
 -    CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
-+        CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
++	CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
  #undef MAKE_STR
 +    }
 +    CHECKCALL(mkdir("/dev/dm-user", 0755));
      // Don't expose the raw commandline to unprivileged processes.
      CHECKCALL(chmod("/proc/cmdline", 0440));
      std::string cmdline;
-@@ -216,8 +225,11 @@ int FirstStageMain(int argc, char** argv) {
+@@ -251,8 +259,11 @@ int FirstStageMain(int argc, char** argv) {
      android::base::ReadFileToString("/proc/bootconfig", &bootconfig);
      gid_t groups[] = {AID_READPROC};
      CHECKCALL(setgroups(arraysize(groups), groups));
@@ -86,7 +86,7 @@ index c7b7b0c13..5ae749c42 100644
  
      CHECKCALL(mknod("/dev/kmsg", S_IFCHR | 0600, makedev(1, 11)));
  
-@@ -229,8 +241,14 @@ int FirstStageMain(int argc, char** argv) {
+@@ -264,8 +275,14 @@ int FirstStageMain(int argc, char** argv) {
      CHECKCALL(mknod("/dev/urandom", S_IFCHR | 0666, makedev(1, 9)));
  
      // This is needed for log wrapper, which gets called before ueventd runs.
@@ -103,17 +103,17 @@ index c7b7b0c13..5ae749c42 100644
  
      // These below mounts are done in first stage init so that first stage mount can mount
      // subdirectories of /mnt/{vendor,product}/.  Other mounts, not required by first stage mount,
-@@ -265,7 +283,8 @@ int FirstStageMain(int argc, char** argv) {
+@@ -303,7 +320,8 @@ int FirstStageMain(int argc, char** argv) {
          for (const auto& [error_string, error_errno] : errors) {
              LOG(ERROR) << error_string << " " << strerror(error_errno);
          }
 -        LOG(FATAL) << "Init encountered errors starting first stage, aborting";
-+        // Halium: log errors but do not abort
++	// Halium: log errors but do not abort
 +        // LOG(FATAL) << "Init encountered errors starting first stage, aborting";
      }
  
      LOG(INFO) << "init first stage started!";
-@@ -357,8 +376,9 @@ int FirstStageMain(int argc, char** argv) {
+@@ -397,8 +415,9 @@ int FirstStageMain(int argc, char** argv) {
          SwitchRoot("/first_stage_ramdisk");
      }
  
@@ -125,11 +125,9 @@ index c7b7b0c13..5ae749c42 100644
      }
  
      struct stat new_root_info;
-@@ -376,8 +396,11 @@ int FirstStageMain(int argc, char** argv) {
-     setenv(kEnvFirstStageStartedAt, std::to_string(start_time.time_since_epoch().count()).c_str(),
+@@ -417,7 +436,9 @@ int FirstStageMain(int argc, char** argv) {
             1);
  
-+
      const char* path = "/system/bin/init";
 -    const char* args[] = {path, "selinux_setup", nullptr};
 +    // Halium: skip selinux_setup
@@ -139,10 +137,10 @@ index c7b7b0c13..5ae749c42 100644
      dup2(fd, STDOUT_FILENO);
      dup2(fd, STDERR_FILENO);
 diff --git a/init/init.cpp b/init/init.cpp
-index 942feb939..05a1a2719 100644
+index 29f643e..62b1c6c 100644
 --- a/init/init.cpp
 +++ b/init/init.cpp
-@@ -872,7 +872,10 @@ int SecondStageMain(int argc, char** argv) {
+@@ -959,7 +959,9 @@ int SecondStageMain(int argc, char** argv) {
      // Queue an action that waits for coldboot done so we know ueventd has set up all of /dev...
      am.QueueBuiltinAction(wait_for_coldboot_done_action, "wait_for_coldboot_done");
      // ... so that we can start queuing up actions that require stuff from /dev.
@@ -150,11 +148,10 @@ index 942feb939..05a1a2719 100644
 +    // Disabled for Halium
 +    //am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
 +    //am.QueueBuiltinAction(SetMmapRndBitsAction, "SetMmapRndBits");
-+
      Keychords keychords;
      am.QueueBuiltinAction(
              [&epoll, &keychords](const BuiltinArguments& args) -> Result<void> {
-@@ -887,6 +890,9 @@ int SecondStageMain(int argc, char** argv) {
+@@ -974,6 +976,9 @@ int SecondStageMain(int argc, char** argv) {
      // Trigger all the boot actions to get us started.
      am.QueueEventTrigger("init");
  
@@ -165,10 +162,10 @@ index 942feb939..05a1a2719 100644
      std::string bootmode = GetProperty("ro.bootmode", "");
      if (bootmode == "charger") {
 diff --git a/init/property_service.cpp b/init/property_service.cpp
-index 5a8fc5418..92fbbc0d3 100644
+index 7fd64b3..734d986 100644
 --- a/init/property_service.cpp
 +++ b/init/property_service.cpp
-@@ -142,7 +142,8 @@ void StopSendingMessages() {
+@@ -143,7 +143,8 @@ void StopSendingMessages() {
  }
  
  bool CanReadProperty(const std::string& source_context, const std::string& name) {
@@ -178,7 +175,7 @@ index 5a8fc5418..92fbbc0d3 100644
      property_info_area->GetPropertyInfo(name.c_str(), &target_context, nullptr);
  
      PropertyAuditData audit_data;
-@@ -153,12 +154,14 @@ bool CanReadProperty(const std::string& source_context, const std::string& name)
+@@ -154,12 +155,14 @@ bool CanReadProperty(const std::string& source_context, const std::string& name)
      audit_data.cr = &cr;
  
      return selinux_check_access(source_context.c_str(), target_context, "file", "read",
@@ -195,7 +192,7 @@ index 5a8fc5418..92fbbc0d3 100644
          return false;
      }
  
-@@ -170,7 +173,8 @@ static bool CheckMacPerms(const std::string& name, const char* target_context,
+@@ -171,7 +174,8 @@ static bool CheckMacPerms(const std::string& name, const char* target_context,
      bool has_access = (selinux_check_access(source_context, target_context, "property_service",
                                              "set", &audit_data) == 0);
  
@@ -205,15 +202,15 @@ index 5a8fc5418..92fbbc0d3 100644
  }
  
  static uint32_t PropertySet(const std::string& name, const std::string& value, std::string* error) {
-@@ -564,11 +568,12 @@ static void handle_property_set_fd() {
+@@ -565,11 +569,13 @@ static void handle_property_set_fd() {
          prop_name[PROP_NAME_MAX-1] = 0;
          prop_value[PROP_VALUE_MAX-1] = 0;
  
 -        std::string source_context;
--        if (!socket.GetSourceContext(&source_context)) {
 +        std::string source_context = "";
 +        // Disabled for Halium
 +        /*if (!socket.GetSourceContext(&source_context)) {
+         if (!socket.GetSourceContext(&source_context)) {
              PLOG(ERROR) << "Unable to set property '" << prop_name << "': getpeercon() failed";
              return;
 -        }
@@ -221,7 +218,7 @@ index 5a8fc5418..92fbbc0d3 100644
  
          const auto& cr = socket.cred();
          std::string error;
-@@ -593,11 +598,12 @@ static void handle_property_set_fd() {
+@@ -594,11 +600,12 @@ static void handle_property_set_fd() {
          }
  
          std::string source_context;
@@ -237,10 +234,29 @@ index 5a8fc5418..92fbbc0d3 100644
          const auto& cr = socket.cred();
          std::string error;
 diff --git a/init/service.cpp b/init/service.cpp
-index dcb3d0c3c..c12861643 100644
+index 7e43061..a0a6e45 100644
 --- a/init/service.cpp
 +++ b/init/service.cpp
-@@ -239,9 +239,10 @@ void Service::SetProcessAttributesAndCaps() {
+@@ -64,7 +64,8 @@ using android::base::WriteStringToFile;
+ namespace android {
+ namespace init {
+ 
+-static Result<std::string> ComputeContextFromExecutable(const std::string& service_path) {
++// Halium: Disabled
++/*static Result<std::string> ComputeContextFromExecutable(const std::string& service_path) {
+     std::string computed_context;
+ 
+     char* raw_con = nullptr;
+@@ -103,7 +104,7 @@ static Result<std::string> ComputeContextFromExecutable(const std::string& servi
+         return Error() << "Could not get process context";
+     }
+     return computed_context;
+-}
++}*/
+ 
+ static bool ExpandArgsAndExecv(const std::vector<std::string>& args, bool sigstop) {
+     std::vector<std::string> expanded_args;
+@@ -241,9 +242,10 @@ void Service::SetProcessAttributesAndCaps() {
      }
  
      if (!seclabel_.empty()) {
@@ -253,7 +269,7 @@ index dcb3d0c3c..c12861643 100644
      }
  
      if (capabilities_) {
-@@ -453,7 +454,8 @@ Result<void> Service::Start() {
+@@ -577,7 +579,8 @@ Result<void> Service::Start() {
      }
  
      std::string scon;
@@ -263,7 +279,7 @@ index dcb3d0c3c..c12861643 100644
          scon = seclabel_;
      } else {
          auto result = ComputeContextFromExecutable(args_[0]);
-@@ -461,7 +463,7 @@ Result<void> Service::Start() {
+@@ -585,7 +588,7 @@ Result<void> Service::Start() {
              return result.error();
          }
          scon = *result;
@@ -273,10 +289,10 @@ index dcb3d0c3c..c12861643 100644
      // APEXd is always started in the "current" namespace because it is the process to set up
      // the current namespace.
 diff --git a/init/subcontext.cpp b/init/subcontext.cpp
-index fa48beab3..07258c17a 100644
+index 7aa4a9d..7f999b0 100644
 --- a/init/subcontext.cpp
 +++ b/init/subcontext.cpp
-@@ -213,7 +213,8 @@ void Subcontext::Fork() {
+@@ -214,7 +214,8 @@ void Subcontext::Fork() {
  
          // We don't switch contexts if we're running the unit tests.  We don't use std::optional,
          // since we still need a real context string to pass to the builtin functions.
@@ -287,13 +303,13 @@ index fa48beab3..07258c17a 100644
                  PLOG(FATAL) << "Could not set execcon for '" << context_ << "'";
              }
 diff --git a/init/util.cpp b/init/util.cpp
-index 9f7bfdb5b..a45238a4b 100644
+index 5b3a73c..5417399 100644
 --- a/init/util.cpp
 +++ b/init/util.cpp
 @@ -88,18 +88,20 @@ Result<uid_t> DecodeUid(const std::string& name) {
   */
- Result<int> CreateSocket(const std::string& name, int type, bool passcred, mode_t perm, uid_t uid,
-                          gid_t gid, const std::string& socketcon) {
+ Result<int> CreateSocket(const std::string& name, int type, bool passcred, bool should_listen,
+                          mode_t perm, uid_t uid, gid_t gid, const std::string& socketcon) {
 -    if (!socketcon.empty()) {
 +    // Disabled for Halium
 +    /*if (!socketcon.empty()) {
@@ -314,13 +330,13 @@ index 9f7bfdb5b..a45238a4b 100644
  
      struct sockaddr_un addr;
      memset(&addr, 0 , sizeof(addr));
-@@ -110,10 +112,11 @@ Result<int> CreateSocket(const std::string& name, int type, bool passcred, mode_
+@@ -110,10 +112,11 @@ Result<int> CreateSocket(const std::string& name, int type, bool passcred, bool
          return ErrnoError() << "Failed to unlink old socket '" << name << "'";
      }
  
 -    std::string secontext;
 +    // Disabled for Halium
-+    /*std::string secontext;
++    /*std::string secontext
      if (SelabelLookupFileContext(addr.sun_path, S_IFSOCK, &secontext) && !secontext.empty()) {
          setfscreatecon(secontext.c_str());
 -    }
@@ -328,7 +344,7 @@ index 9f7bfdb5b..a45238a4b 100644
  
      if (passcred) {
          int on = 1;
-@@ -125,9 +128,10 @@ Result<int> CreateSocket(const std::string& name, int type, bool passcred, mode_
+@@ -125,9 +128,10 @@ Result<int> CreateSocket(const std::string& name, int type, bool passcred, bool
      int ret = bind(fd, (struct sockaddr *) &addr, sizeof (addr));
      int savederrno = errno;
  
@@ -341,3 +357,6 @@ index 9f7bfdb5b..a45238a4b 100644
  
      auto guard = android::base::make_scope_guard([&addr] { unlink(addr.sun_path); });
  
+-- 
+2.39.2
+

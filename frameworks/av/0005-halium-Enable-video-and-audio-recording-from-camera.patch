@@ -1,22 +1,21 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 9192efc807cc7449d785e5fe91a1b7ec663eecd9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Thu, 11 Feb 2016 15:43:33 +0100
 Subject: [PATCH] (halium) Enable video and audio recording from camera.
 
+Change-Id: I2a4b4077a41d72c748defafca2a50aa582ea4381
 Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
-
-Change-Id: I9f0c80bf75c0ee713d27fe4460e409cef51cd4c2
 ---
- media/libaudioclient/AudioRecord.cpp          | 28 +++++++++++++------
- .../libaudioclient/camera_record_service.cpp  | 21 +++++++++-----
- .../include/media/camera_record_service.h     | 12 ++++++--
- 3 files changed, 42 insertions(+), 19 deletions(-)
+ media/libaudioclient/AudioRecord.cpp          | 26 +++++++++++++------
+ .../libaudioclient/camera_record_service.cpp  | 21 ++++++++++-----
+ .../include/media/camera_record_service.h     | 12 ++++++---
+ 3 files changed, 41 insertions(+), 18 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index fb4197517..f613cef28 100644
+index 77037bd..e06e33a 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -392,7 +392,7 @@ status_t AudioRecord::set(
+@@ -462,7 +462,7 @@ status_t AudioRecord::set(
      mMarkerReached = false;
      mNewPosition = 0;
      mUpdatePeriod = 0;
@@ -25,25 +24,16 @@ index fb4197517..f613cef28 100644
      mSequence = 1;
      mObservedSequence = mSequence;
      mInOverrun = false;
-@@ -404,6 +404,8 @@ exit:
-     if (status != NO_ERROR) {
-         mMediaMetrics.markError(status, __FUNCTION__);
+@@ -593,6 +593,8 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
+         // we've successfully started, log that time
+         mMediaMetrics.logStart(systemTime());
      }
 +
 +    ALOGD("return status %d", status);
      return status;
  }
  
-@@ -458,7 +460,7 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
-     mActive = true;
- 
-     if (!(flags & CBLK_INVALID)) {
--        status = statusTFromBinderStatus(mAudioRecord->start(event, triggerSession));
-+        ALOGV("mAudioRecord->start()");
-         if (status == DEAD_OBJECT) {
-             flags |= CBLK_INVALID;
-         }
-@@ -829,17 +831,25 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
+@@ -941,17 +943,25 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          return status;
      }
  
@@ -77,7 +67,7 @@ index fb4197517..f613cef28 100644
      ALOG_ASSERT(output.audioRecord != 0);
  
 diff --git a/media/libaudioclient/camera_record_service.cpp b/media/libaudioclient/camera_record_service.cpp
-index c47070023..326ba921f 100644
+index c470700..326ba92 100644
 --- a/media/libaudioclient/camera_record_service.cpp
 +++ b/media/libaudioclient/camera_record_service.cpp
 @@ -59,7 +59,7 @@ status_t BpCameraRecordService::initRecord(
@@ -155,7 +145,7 @@ index c47070023..326ba921f 100644
  
  sp<CameraRecordService>& CameraRecordService::service_instance()
 diff --git a/media/libaudioclient/include/media/camera_record_service.h b/media/libaudioclient/include/media/camera_record_service.h
-index 8a4e7f585..eb544d1d6 100644
+index 8a4e7f5..eb544d1 100644
 --- a/media/libaudioclient/include/media/camera_record_service.h
 +++ b/media/libaudioclient/include/media/camera_record_service.h
 @@ -21,6 +21,7 @@
@@ -205,3 +195,6 @@ index 8a4e7f585..eb544d1d6 100644
                                  uint32_t sampleRate,
                                  audio_format_t format,
                                  audio_channel_mask_t channelMask,
+-- 
+2.41.0
+
