@@ -1,18 +1,18 @@
-From 9192efc807cc7449d785e5fe91a1b7ec663eecd9 Mon Sep 17 00:00:00 2001
+From 511552b769fa9fcc213c3502dd34282a2e7b923d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Thu, 11 Feb 2016 15:43:33 +0100
 Subject: [PATCH] (halium) Enable video and audio recording from camera.
 
-Change-Id: I2a4b4077a41d72c748defafca2a50aa582ea4381
+Change-Id: I8942df19db933f92b77d6aada74ac28245fa8961
 Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
 ---
- media/libaudioclient/AudioRecord.cpp          | 26 +++++++++++++------
+ media/libaudioclient/AudioRecord.cpp          | 27 +++++++++++++------
  .../libaudioclient/camera_record_service.cpp  | 21 ++++++++++-----
  .../include/media/camera_record_service.h     | 12 ++++++---
- 3 files changed, 41 insertions(+), 18 deletions(-)
+ 3 files changed, 42 insertions(+), 18 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index 77037bd..e06e33a 100644
+index 77037bd..b86d664 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
 @@ -462,7 +462,7 @@ status_t AudioRecord::set(
@@ -33,7 +33,7 @@ index 77037bd..e06e33a 100644
      return status;
  }
  
-@@ -941,17 +943,25 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
+@@ -941,17 +943,26 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          return status;
      }
  
@@ -61,6 +61,7 @@ index 77037bd..e06e33a 100644
 +    output.buffers = recording.buffers;
 +    // static audio_io_handle_t == 1
 +    output.inputId = 1;
++    output.sampleRate = mSampleRate;
 +    output.frameCount = mReqFrameCount;
 +    output.notificationFrameCount = mNotificationFramesReq;
  
