@@ -1,4 +1,4 @@
-From e410c184c9c78fd05ab2a2671ddc9ea4ebbd32cf Mon Sep 17 00:00:00 2001
+From c5a9ca2c4e6e8e7c602dfc0352d649d73489b471 Mon Sep 17 00:00:00 2001
 From: TheKit <thekit@disroot.org>
 Date: Fri, 28 Apr 2023 00:13:09 +0000
 Subject: [PATCH] (halium) libstagefright: do not wait for package_native
@@ -8,11 +8,10 @@ That service is not running in Halium and connectFormatShaper
 uses it to determine whether it's running on a handheld device,
 which is likely going to be always for true for us.
 
-Change-Id: I1fd63055068d1f0dd516462cd88afc56bc08d91d
+Change-Id: I08e483f56f3707f2d925d9a11a081a5b5b6db91b
 ---
  media/libstagefright/MediaCodec.cpp | 3 +++
- media/utils/ServiceUtilities.cpp    | 5 +++++
- 2 files changed, 8 insertions(+)
+ 1 file changed, 3 insertions(+)
 
 diff --git a/media/libstagefright/MediaCodec.cpp b/media/libstagefright/MediaCodec.cpp
 index 3044c20..e67a39e 100644
@@ -32,28 +31,6 @@ index 3044c20..e67a39e 100644
          // if we didn't get serviceMgr, we'll leave packageMgr as default null
          if (packageMgr != nullptr) {
  
-diff --git a/media/utils/ServiceUtilities.cpp b/media/utils/ServiceUtilities.cpp
-index 83b84e3..3829862 100644
---- a/media/utils/ServiceUtilities.cpp
-+++ b/media/utils/ServiceUtilities.cpp
-@@ -489,12 +489,17 @@ mediautils::UidInfo::Info mediautils::UidInfo::getInfo(uid_t uid)
-         if (sm.get() == nullptr) {
-             ALOGE("%s: Cannot find service manager", __func__);
-         } else {
-+            // Halium: We don't run package_native
-+            /*
-             sp<IBinder> binder = sm->getService(String16("package_native"));
-             if (binder.get() == nullptr) {
-                 ALOGE("%s: Cannot find package_native", __func__);
-             } else {
-+            */
-                 package_mgr = interface_cast<content::pm::IPackageManagerNative>(binder);
-+            /*
-             }
-+            */
-         }
- 
-         // find package name
 -- 
 2.41.0
 
