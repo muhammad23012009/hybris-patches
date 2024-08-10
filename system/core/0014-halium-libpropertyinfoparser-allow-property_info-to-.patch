@@ -1,8 +1,8 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From f8866f88db58e97e7d9252ab411c95f44752bc96 Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
 Date: Mon, 21 Mar 2022 19:31:57 +0200
-Subject: [PATCH] (halium) libpropertyinfoparser: allow property_info to be
- owned by nobody user/group
+Subject: [PATCH 14/19] (halium) libpropertyinfoparser: allow property_info to
+ be owned by nobody user/group
 
 Useful when using libhybris inside unshared user namespace containers
 
@@ -27,5 +27,5 @@ index 489d81a..622bd0f 100644
        (fd_stat.st_size < static_cast<off_t>(sizeof(PropertyInfoArea)))) {
      close(fd);
 -- 
-2.37.1
+2.45.2
 

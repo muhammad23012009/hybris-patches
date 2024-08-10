@@ -1,8 +1,8 @@
-From ca21f4821e1d428e667fac5ce2475925b6e252b5 Mon Sep 17 00:00:00 2001
+From b5c00d4a90e841c33bec97ebc1a70cd3a5edcee9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Wed, 30 Jul 2014 23:08:00 +0200
-Subject: [PATCH] Adjust permissions of socket. Provides a connection to a
- per-user remote trust-store implementation via a unix domain socket.
+Subject: [PATCH 07/12] Adjust permissions of socket. Provides a connection to
+ a per-user remote trust-store implementation via a unix domain socket.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -18,10 +18,10 @@ Signed-off-by: Thomas Voß <thomas.voss@canonical.com>
  1 file changed, 203 insertions(+)
 
 diff --git a/services/camera/libcameraservice/CameraService.cpp b/services/camera/libcameraservice/CameraService.cpp
-index bc6e2a1..6bd0bdb 100644
+index 1dca676..993cd28 100644
 --- a/services/camera/libcameraservice/CameraService.cpp
 +++ b/services/camera/libcameraservice/CameraService.cpp
-@@ -59,7 +59,9 @@
+@@ -63,7 +63,9 @@
  #include <mediautils/BatteryNotifier.h>
  #include <processinfo/ProcessInfoService.h>
  #include <utils/Errors.h>
@@ -31,8 +31,8 @@ index bc6e2a1..6bd0bdb 100644
  #include <utils/String16.h>
  #include <utils/SystemClock.h>
  #include <utils/Trace.h>
-@@ -82,6 +84,202 @@ namespace {
-     const char* kPermissionServiceName = "permission";
+@@ -94,6 +96,202 @@ namespace {
+     const char* kProcessInfoServiceName = "processinfo";
  }; // namespace anonymous
  
 +#include <stdint.h>
@@ -233,8 +233,8 @@ index bc6e2a1..6bd0bdb 100644
 +
  namespace android {
  
- using base::StringPrintf;
-@@ -1244,6 +1442,11 @@ Status CameraService::validateClientPermissionsLocked(const String8& cameraId,
+ using namespace camera3;
+@@ -1806,6 +2004,11 @@ Status CameraService::validateClientPermissionsLocked(const std::string& cameraI
      // Check if we can trust clientUid
      if (clientUid == USE_CALLING_UID) {
          clientUid = callingUid;
@@ -247,5 +247,5 @@ index bc6e2a1..6bd0bdb 100644
          ALOGE("CameraService::connect X (calling PID %d, calling UID %d) rejected "
                  "(don't trust clientUid %d)", callingPid, callingUid, clientUid);
 -- 
-2.41.0
+2.45.2
 

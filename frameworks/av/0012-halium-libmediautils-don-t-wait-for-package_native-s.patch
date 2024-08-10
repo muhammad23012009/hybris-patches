@@ -1,7 +1,8 @@
-From 7d57a592345d538ef73a337403e24d30304c389b Mon Sep 17 00:00:00 2001
+From 6a98b8dd24a71293aefc9fda5bc39e30d0ee3916 Mon Sep 17 00:00:00 2001
 From: Muhammad <muhammad23012009@hotmail.com>
 Date: Mon, 31 Jul 2023 18:15:26 +0500
-Subject: [PATCH] (halium) libmediautils: don't wait for package_native service
+Subject: [PATCH 12/12] (halium) libmediautils: don't wait for package_native
+ service
 
 Change-Id: I24a1d8a5d2aec6472ae0727343466d62bd88a1a9
 Signed-off-by: Muhammad <muhammad23012009@hotmail.com>
@@ -10,10 +11,10 @@ Signed-off-by: Muhammad <muhammad23012009@hotmail.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/media/utils/ServiceUtilities.cpp b/media/utils/ServiceUtilities.cpp
-index 83b84e3..60d9b28 100644
+index c4f2808..d2f280d 100644
 --- a/media/utils/ServiceUtilities.cpp
 +++ b/media/utils/ServiceUtilities.cpp
-@@ -489,12 +489,15 @@ mediautils::UidInfo::Info mediautils::UidInfo::getInfo(uid_t uid)
+@@ -532,12 +532,15 @@ mediautils::UidInfo::Info mediautils::UidInfo::getInfo(uid_t uid)
          if (sm.get() == nullptr) {
              ALOGE("%s: Cannot find service manager", __func__);
          } else {
@@ -30,5 +31,5 @@ index 83b84e3..60d9b28 100644
  
          // find package name
 -- 
-2.41.0
+2.45.2
 

@@ -1,8 +1,8 @@
-From 87e2e708c20bf031fbec55392f191a79eeced210 Mon Sep 17 00:00:00 2001
+From ab35ef65857bbd0eea79874fc68fe6f2570f49fe Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
 Date: Mon, 20 Mar 2023 18:30:57 +0000
-Subject: [PATCH] (halium) libprocessgroup: fix mounting cpu/cpuacct on systemd
- hosts
+Subject: [PATCH 17/19] (halium) libprocessgroup: fix mounting cpu/cpuacct on
+ systemd hosts
 
 systemd with cgroup v1 mounts cpu and cpuacct controllers together.
 As result, libprocessgroup's attempt to mount them independently will fail.
@@ -10,30 +10,35 @@ If this happens, retry and mount cpu and cpuacct combined instead.
 
 Change-Id: I7893b0a809dffec49c15f36621363552d2e08667
 ---
- libprocessgroup/setup/cgroup_map_write.cpp | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ libprocessgroup/setup/cgroup_map_write.cpp | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/libprocessgroup/setup/cgroup_map_write.cpp b/libprocessgroup/setup/cgroup_map_write.cpp
-index 25f16a6..e952664 100644
+index 4e44c91..d856892 100644
 --- a/libprocessgroup/setup/cgroup_map_write.cpp
 +++ b/libprocessgroup/setup/cgroup_map_write.cpp
-@@ -291,6 +291,16 @@ static bool SetupCgroup(const CgroupDescriptor& descriptor) {
-             result = mount("none", controller->path(), "cgroup", MS_NODEV | MS_NOEXEC | MS_NOSUID,
-                            controller->name());
-         }
+@@ -277,8 +277,19 @@ static bool MountV2CgroupController(const CgroupDescriptor& descriptor) {
+         LOG(INFO) << "Mounting memcg with memory_recursiveprot failed. Retrying without.";
+         if (mount("none", controller->path(), "cgroup2", MS_NODEV | MS_NOEXEC | MS_NOSUID,
+                   nullptr) < 0) {
+-            PLOG(ERROR) << "Failed to mount cgroup v2";
+-            return IsOptionalController(controller);
++            PLOG(WARNING) << "Failed to mount cgroup v2";
 +
-+        // Halium: systemd with cgroup v1 mounts cpu and cpuacct controllers together.
-+        // As result, libprocessgroup's attempt to mount them independently will fail.
-+        // If this happens, retry and mount cpu and cpuacct together.
-+        if (result < 0 &&
-+            (!strcmp(controller->name(), "cpu") || !strcmp(controller->name(), "cpuacct"))) {
-+            // mount cgroup none <path> nodev noexec nosuid <controller>
-+            result = mount("none", controller->path(), "cgroup", MS_NODEV | MS_NOEXEC | MS_NOSUID,
-+                           "cpu,cpuacct");
-+        }
++            // Halium: systemd with cgroup v1 mounts cpu and cpuacct controllers together.
++            // As result, libprocessgroup's attempt to mount them independently will fail.
++            // If this happens, retry and mount cpu and cpuacct together.
++            if (!strcmp(controller->name(), "cpu") || !strcmp(controller->name(), "cpuacct")) {
++                if (mount("none", controller->path(), "cgroup", MS_NODEV | MS_NOEXEC | MS_NOSUID,
++                          "cpu,cpuacct") < 0) {
++
++                    PLOG(ERROR) << "Failed to mount cgroup v1 with Halium hack";
++                    return IsOptionalController(controller);
++                }
++            }
+         }
      }
  
-     if (result < 0) {
 -- 
-2.39.1
+2.45.2
 

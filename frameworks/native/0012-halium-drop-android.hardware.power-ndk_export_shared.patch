@@ -1,4 +1,4 @@
-From d40a292c3b68c41fe4fa82c7eb402d81cfc3ac87 Mon Sep 17 00:00:00 2001
+From 56aff665cb0100a01e32d7dd3ed03deb957a1a49 Mon Sep 17 00:00:00 2001
 From: Muhammad <muhammad23012009@hotmail.com>
 Date: Sun, 11 Aug 2024 16:40:16 +0500
 Subject: [PATCH 12/12] (halium) drop android.hardware.power-ndk_export_shared

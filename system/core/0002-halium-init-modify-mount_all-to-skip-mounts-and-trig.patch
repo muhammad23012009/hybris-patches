@@ -1,8 +1,8 @@
-From 25b49200e418bce3ca897733cdecc12054a3d849 Mon Sep 17 00:00:00 2001
+From e09faaf3bcbbfad9562123d7972b28cb33cd02d7 Mon Sep 17 00:00:00 2001
 From: Asriel Dreemurr <asriel.danctnix@gmail.com>
 Date: Wed, 11 Nov 2020 08:08:51 +0700
-Subject: [PATCH] (halium) init: modify mount_all to skip mounts and trigger
- nonencrypted state
+Subject: [PATCH 02/19] (halium) init: modify mount_all to skip mounts and
+ trigger nonencrypted state
 
 Change-Id: Iae8cffa6aeb2d56f35a51f0e9f52fd92402c43e9
 ---
@@ -11,10 +11,10 @@ Change-Id: Iae8cffa6aeb2d56f35a51f0e9f52fd92402c43e9
  2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/init/builtins.cpp b/init/builtins.cpp
-index 01db4f5..2989afa 100644
+index a95a4a3..c69785a 100644
 --- a/init/builtins.cpp
 +++ b/init/builtins.cpp
-@@ -661,13 +661,16 @@ static Result<void> do_mount_all(const BuiltinArguments& args) {
+@@ -644,13 +644,16 @@ static Result<void> do_mount_all(const BuiltinArguments& args) {
          }
      }
  
@@ -33,10 +33,10 @@ index 01db4f5..2989afa 100644
          // This call to fs_mgr_mount_all mounted userdata. Keep the result in
          // order for userspace reboot to correctly remount userdata.
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index 2b53d88..a0174d2 100644
+index 92e8f27..ead99de 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -547,6 +547,10 @@ on late-init
+@@ -563,6 +563,10 @@ on late-init
      trigger early-boot
      trigger boot
  
@@ -48,5 +48,5 @@ index 2b53d88..a0174d2 100644
      # Once metadata has been mounted, we'll need vold to deal with userdata checkpointing
      start vold
 -- 
-2.41.0
+2.45.2
 

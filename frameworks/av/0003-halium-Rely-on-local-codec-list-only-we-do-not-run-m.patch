@@ -1,7 +1,7 @@
-From 574a6ef06a4b487fdcf1c29c5895322be47cf224 Mon Sep 17 00:00:00 2001
+From d4b5b3b03e8124eba7d19563123a675cd0b0f7da Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Wed, 3 Feb 2016 17:46:38 +0100
-Subject: [PATCH] (halium) Rely on local codec list only, we do not run
+Subject: [PATCH 03/12] (halium) Rely on local codec list only, we do not run
  media.player/service.
 
 Change-Id: Iaa14db20b473c8412d9393964636754174308172
@@ -11,10 +11,10 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/media/libstagefright/MediaCodecList.cpp b/media/libstagefright/MediaCodecList.cpp
-index a3040f4..41d86ce 100644
+index 4ad3276..2685d23 100644
 --- a/media/libstagefright/MediaCodecList.cpp
 +++ b/media/libstagefright/MediaCodecList.cpp
-@@ -180,7 +180,7 @@ void MediaCodecList::BinderDeathObserver::binderDied(const wp<IBinder> &who __un
+@@ -181,7 +181,7 @@ void MediaCodecList::BinderDeathObserver::binderDied(const wp<IBinder> &who __un
  
  // static
  sp<IMediaCodecList> MediaCodecList::getInstance() {
@@ -23,7 +23,7 @@ index a3040f4..41d86ce 100644
      if (sRemoteList == nullptr) {
          sMediaPlayer = defaultServiceManager()->getService(String16("media.player"));
          sp<IMediaPlayerService> service =
-@@ -198,6 +198,8 @@ sp<IMediaCodecList> MediaCodecList::getInstance() {
+@@ -199,6 +199,8 @@ sp<IMediaCodecList> MediaCodecList::getInstance() {
          }
      }
      return sRemoteList;
@@ -33,5 +33,5 @@ index a3040f4..41d86ce 100644
  
  MediaCodecList::MediaCodecList(std::vector<MediaCodecListBuilderBase*> builders) {
 -- 
-2.41.0
+2.45.2
 

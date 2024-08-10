@@ -1,8 +1,8 @@
-From a892c7d1908d339338fae9cc6b5dc2044a4dc1f2 Mon Sep 17 00:00:00 2001
+From 71bb68454747f7c1fcac51fb1f70f227ad580259 Mon Sep 17 00:00:00 2001
 From: Alfred Neumayer <dev.beidl@gmail.com>
 Date: Sat, 4 Feb 2023 14:18:08 +0100
-Subject: [PATCH] (halium) libaudioclient: Avoid stalling audio recording on 
- SCHED_* checks
+Subject: [PATCH 10/12] (halium) libaudioclient: Avoid stalling audio recording
+ on SCHED_* checks
 
 libaudioclient (responsible for polling buffers from micshm) waits up to half
 a second on checking whether real-time scheduling priority has been set or not.
@@ -20,10 +20,10 @@ Change-Id: I1ecbdd5a807c310cb6e0f8ef0a9e1dfaa2a86ec2
  1 file changed, 20 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index e06e33a..50067a1 100644
+index a5bcabf..a8d5e36 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -1344,26 +1344,6 @@ nsecs_t AudioRecord::processAudioBuffer()
+@@ -1266,26 +1266,6 @@ nsecs_t AudioRecord::processAudioBuffer()
          mLock.unlock();
          return NS_NEVER;
      }
@@ -51,5 +51,5 @@ index e06e33a..50067a1 100644
      // Can only reference mCblk while locked
      int32_t flags = android_atomic_and(~CBLK_OVERRUN, &mCblk->mFlags);
 -- 
-2.41.0
+2.45.2
 

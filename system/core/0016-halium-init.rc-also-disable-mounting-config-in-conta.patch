@@ -1,7 +1,8 @@
-From 7ab0bf96a082c3cf13b9db3b1a0d2bb3a5a7e9d9 Mon Sep 17 00:00:00 2001
+From 3a2dee065c0ab3d96033b8c3e86237e220f97f67 Mon Sep 17 00:00:00 2001
 From: Ratchanan Srirattanamet <ratchanan@ubports.com>
 Date: Tue, 16 Aug 2022 18:04:38 +0700
-Subject: [PATCH] (halium) init.rc: also disable mounting /config in container
+Subject: [PATCH 16/19] (halium) init.rc: also disable mounting /config in
+ container
 
 We've decided that we will handle everything USB in the host side.
 Leaving this mounted inside the container opens a chance for vendor
@@ -28,10 +29,10 @@ Change-Id: Iefe6cf0b806d67acb5aedb52e8bc3275686bd550
  1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index da57d5ff8..977b67754 100644
+index e931c39..1a11e51 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -171,9 +171,10 @@ on init
+@@ -254,9 +254,10 @@ on init
  
      restorecon_recursive /mnt
  
@@ -46,5 +47,5 @@ index da57d5ff8..977b67754 100644
      # Mount binderfs
      # Halium: binderfs should be mounted by host
 -- 
-2.25.1
+2.45.2
 

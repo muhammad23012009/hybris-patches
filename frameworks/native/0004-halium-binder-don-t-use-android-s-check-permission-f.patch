@@ -1,7 +1,8 @@
-From a3edf9573addca408d6d3aac58eef783410195a9 Mon Sep 17 00:00:00 2001
+From 229591d06949cf4a7c2fadc8d2a6576ed2e69d2d Mon Sep 17 00:00:00 2001
 From: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
 Date: Fri, 21 Apr 2023 14:31:12 +0500
-Subject: [PATCH] (halium) binder: don't use android's check permission feature
+Subject: [PATCH 04/12] (halium) binder: don't use android's check permission
+ feature
 
 Change-Id: I97e097f4c70c418b22d9c288c5635fd3d881fcd7
 Signed-off-by: Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>
@@ -12,27 +13,27 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/cmds/servicemanager/ServiceManager.cpp b/cmds/servicemanager/ServiceManager.cpp
-index 3cfe529..dd683c1 100644
+index a828b52..4f1d0a0 100644
 --- a/cmds/servicemanager/ServiceManager.cpp
 +++ b/cmds/servicemanager/ServiceManager.cpp
-@@ -295,9 +295,10 @@ bool isValidServiceName(const std::string& name) {
+@@ -410,9 +410,10 @@ bool isValidServiceName(const std::string& name) {
  Status ServiceManager::addService(const std::string& name, const sp<IBinder>& binder, bool allowIsolated, int32_t dumpPriority) {
      auto ctx = mAccess->getCallingContext();
  
 -    if (multiuser_get_app_id(ctx.uid) >= AID_APP) {
 +    // Halium: Allow phablet
 +    /*if (multiuser_get_app_id(ctx.uid) >= AID_APP) {
-         return Status::fromExceptionCode(Status::EX_SECURITY, "App UIDs cannot add services");
+         return Status::fromExceptionCode(Status::EX_SECURITY, "App UIDs cannot add services.");
 -    }
 +    }*/
  
      if (!mAccess->canAdd(ctx, name)) {
-         return Status::fromExceptionCode(Status::EX_SECURITY, "SELinux denial");
+         return Status::fromExceptionCode(Status::EX_SECURITY, "SELinux denied.");
 diff --git a/libs/binder/IServiceManager.cpp b/libs/binder/IServiceManager.cpp
-index fd2d868..556e789 100644
+index 39573ec..00daca0 100644
 --- a/libs/binder/IServiceManager.cpp
 +++ b/libs/binder/IServiceManager.cpp
-@@ -179,6 +179,8 @@ static StaticString16 _permission(u"permission");
+@@ -196,6 +196,8 @@ static StaticString16 _permission(u"permission");
  
  bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t* outUid)
  {
@@ -41,15 +42,15 @@ index fd2d868..556e789 100644
      IPCThreadState* ipcState = IPCThreadState::self();
      pid_t pid = ipcState->getCallingPid();
      uid_t uid = ipcState->getCallingUid();
-@@ -188,6 +190,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
+@@ -205,6 +207,8 @@ bool checkCallingPermission(const String16& permission, int32_t* outPid, int32_t
  }
  
  bool checkPermission(const String16& permission, pid_t pid, uid_t uid, bool logPermissionFailure) {
 +    return true;
 +
-     static Mutex gPermissionControllerLock;
+     static std::mutex gPermissionControllerLock;
      static sp<IPermissionController> gPermissionController;
  
 -- 
-2.39.2
+2.45.2
 

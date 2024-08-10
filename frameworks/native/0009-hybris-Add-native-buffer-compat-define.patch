@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 7f9eb8532c3b64870c04645d88702fa1fce91248 Mon Sep 17 00:00:00 2001
 From: Matti Lehtimaki <matti.lehtimaki@gmail.com>
 Date: Thu, 5 Nov 2020 20:50:40 +0200
-Subject: [PATCH] (hybris) Add native buffer compat define.
+Subject: [PATCH 09/12] (hybris) Add native buffer compat define.
 
 Change-Id: Iaa50a8270fc822fa3aacec07a5dcdfc467752afe
 ---
@@ -41,5 +41,5 @@ index ae0220a..05e9559 100644
  // index "OMX.google.android.index.prepareForAdaptivePlayback" is given.
  //
 -- 
-2.37.3
+2.45.2
 

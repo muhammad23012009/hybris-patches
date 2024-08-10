@@ -1,112 +1,90 @@
-From 2aa4ab2ea7e454a902596ec07f00fc2171cb3023 Mon Sep 17 00:00:00 2001
+From fe8f797a82c9f4c587d64cc68ef4d35a18c8aa9c Mon Sep 17 00:00:00 2001
 From: TheKit <thekit@disroot.org>
-Date: Mon, 17 Jul 2023 21:20:48 +0500
-Subject: [PATCH] (halium) libgui: do not attempt to get SurfaceFlinger service
+Date: Sun, 16 Jul 2023 21:39:02 +0000
+Subject: [PATCH 11/12] (halium) libgui: do not attempt to get SurfaceFlinger
+ service
 
-Change-Id: I0e988dfb3d942845fab770b42f0e35ac6b25c3b4
+Change-Id: I98090cf977d3c3c3e4fbbda3a244c0823e1bb5b3
 ---
- libs/gui/Surface.cpp               | 30 ++++++++++++++++++++++++++++++
- libs/gui/SurfaceComposerClient.cpp |  3 +++
- 2 files changed, 33 insertions(+)
+ libs/gui/Surface.cpp               | 22 ++++++++++++++++++++--
+ libs/gui/SurfaceComposerClient.cpp |  5 +++++
+ 2 files changed, 25 insertions(+), 2 deletions(-)
 
 diff --git a/libs/gui/Surface.cpp b/libs/gui/Surface.cpp
-index 4c80792..493d020 100644
+index 086544e..44f0f12 100644
 --- a/libs/gui/Surface.cpp
 +++ b/libs/gui/Surface.cpp
-@@ -123,7 +123,11 @@ Surface::~Surface() {
+@@ -137,11 +137,17 @@ Surface::~Surface() {
  }
  
  sp<ISurfaceComposer> Surface::composerService() const {
+-    return ComposerService::getComposerService();
 +    // Halium: SurfaceFlinger is not running
-+    /*
-     return ComposerService::getComposerService();
-+    */
++    // return ComposerService::getComposerService();
++
 +    return nullptr;
  }
  
  sp<gui::ISurfaceComposer> Surface::composerServiceAIDL() const {
-@@ -180,6 +184,11 @@ status_t Surface::getDisplayRefreshCycleDuration(nsecs_t* outRefreshDuration) {
+-    return ComposerServiceAIDL::getComposerService();
++    // Halium: SurfaceFlinger is not running
++    // return ComposerServiceAIDL::getComposerService();
++
++    return nullptr;
+ }
+ 
+ nsecs_t Surface::now() const {
+@@ -193,6 +199,10 @@ status_t Surface::getLastQueuedBuffer(sp<GraphicBuffer>* outBuffer,
+ status_t Surface::getDisplayRefreshCycleDuration(nsecs_t* outRefreshDuration) {
      ATRACE_CALL();
  
-     gui::DisplayStatInfo stats;
-+
 +    // Halium: SurfaceFlinger is not running
 +    if (composerService() == nullptr)
 +        return NO_ERROR;
 +
+     gui::DisplayStatInfo stats;
      binder::Status status = composerServiceAIDL()->getDisplayStats(nullptr, &stats);
      if (!status.isOk()) {
-         return status.transactionError();
-@@ -348,6 +357,10 @@ status_t Surface::getFrameTimestamps(uint64_t frameNumber,
- status_t Surface::getWideColorSupport(bool* supported) {
-     ATRACE_CALL();
+@@ -1208,6 +1218,10 @@ int Surface::queueBuffers(const std::vector<BatchQueuedBuffer>& buffers) {
+ void Surface::querySupportedTimestampsLocked() const {
+     // mMutex must be locked when calling this method.
  
-+    // Halium: SurfaceFlinger is not running
-+    if (composerService() == nullptr)
-+        return NAME_NOT_FOUND;
-+
-     const sp<IBinder> display = ComposerServiceAIDL::getInstance().getInternalDisplayToken();
-     if (display == nullptr) {
-         return NAME_NOT_FOUND;
-@@ -361,6 +374,10 @@ status_t Surface::getWideColorSupport(bool* supported) {
- status_t Surface::getHdrSupport(bool* supported) {
-     ATRACE_CALL();
- 
-+    // Halium: SurfaceFlinger is not running
-+    if (composerService() == nullptr)
-+        return NAME_NOT_FOUND;
-+
-     const sp<IBinder> display = ComposerServiceAIDL::getInstance().getInternalDisplayToken();
-     if (display == nullptr) {
-         return NAME_NOT_FOUND;
-@@ -1253,6 +1270,11 @@ void Surface::querySupportedTimestampsLocked() const {
-     if (mQueriedSupportedTimestamps) {
-         return;
-     }
-+
 +    // Halium: SurfaceFlinger is not running
 +    if (composerService() == nullptr)
 +        return;
 +
-     mQueriedSupportedTimestamps = true;
- 
-     std::vector<FrameEvent> supportedFrameTimestamps;
-@@ -2634,12 +2656,20 @@ status_t Surface::setFrameRate(float frameRate, int8_t compatibility,
-         return BAD_VALUE;
+     if (mQueriedSupportedTimestamps) {
+         return;
      }
+@@ -2592,6 +2606,10 @@ void Surface::ProducerListenerProxy::onBuffersDiscarded(const std::vector<int32_
  
-+    // Halium: SurfaceFlinger is not running
-+    if (composerService() == nullptr)
-+        return NAME_NOT_FOUND;
+ status_t Surface::setFrameRate(float frameRate, int8_t compatibility,
+                                int8_t changeFrameRateStrategy) {
 +
-     return composerService()->setFrameRate(mGraphicBufferProducer, frameRate, compatibility,
-                                            changeFrameRateStrategy);
- }
- 
- status_t Surface::setFrameTimelineInfo(uint64_t /*frameNumber*/,
-                                        const FrameTimelineInfo& frameTimelineInfo) {
-+    // Halium: SurfaceFlinger is not running
-+    if (composerService() == nullptr)
-+        return NAME_NOT_FOUND;
++    // Halium: Disabled
++    return NO_ERROR;
 +
-     return composerService()->setFrameTimelineInfo(mGraphicBufferProducer, frameTimelineInfo);
- }
- 
+ #if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(BQ_SETFRAMERATE)
+     if (flags::bq_setframerate()) {
+         status_t err = mGraphicBufferProducer->setFrameRate(frameRate, compatibility,
 diff --git a/libs/gui/SurfaceComposerClient.cpp b/libs/gui/SurfaceComposerClient.cpp
-index 05beb07..73a5320 100644
+index 4f1356b..b02e86c 100644
 --- a/libs/gui/SurfaceComposerClient.cpp
 +++ b/libs/gui/SurfaceComposerClient.cpp
-@@ -83,7 +83,10 @@ ComposerService::ComposerService()
+@@ -96,8 +96,13 @@ ComposerService::ComposerService()
+ }
  
  bool ComposerService::connectLocked() {
-     const String16 name("SurfaceFlinger");
-+    // Halium: SurfaceFlinger is not running
++
++    // Halium: Disabled
 +    /*
+     const String16 name("SurfaceFlinger");
      mComposerService = waitForService<ISurfaceComposer>(name);
 +    */
++
      if (mComposerService == nullptr) {
          return false; // fatal error or permission problem
      }
 -- 
-2.41.0
+2.45.2
 

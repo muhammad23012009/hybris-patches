@@ -1,7 +1,7 @@
-From 511552b769fa9fcc213c3502dd34282a2e7b923d Mon Sep 17 00:00:00 2001
+From ce8e536ee829bd1154795432dafe6496b70c52dd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Thomas=20Vo=C3=9F?= <thomas.voss.bochum@gmail.com>
 Date: Thu, 11 Feb 2016 15:43:33 +0100
-Subject: [PATCH] (halium) Enable video and audio recording from camera.
+Subject: [PATCH 05/12] (halium) Enable video and audio recording from camera.
 
 Change-Id: I8942df19db933f92b77d6aada74ac28245fa8961
 Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
@@ -12,10 +12,10 @@ Signed-off-by: Ondrej Kubik <ondrej.kubik@canonical.com>
  3 files changed, 42 insertions(+), 18 deletions(-)
 
 diff --git a/media/libaudioclient/AudioRecord.cpp b/media/libaudioclient/AudioRecord.cpp
-index 77037bd..b86d664 100644
+index 7ced30a..a5bcabf 100644
 --- a/media/libaudioclient/AudioRecord.cpp
 +++ b/media/libaudioclient/AudioRecord.cpp
-@@ -462,7 +462,7 @@ status_t AudioRecord::set(
+@@ -392,7 +392,7 @@ status_t AudioRecord::set(
      mMarkerReached = false;
      mNewPosition = 0;
      mUpdatePeriod = 0;
@@ -24,7 +24,7 @@ index 77037bd..b86d664 100644
      mSequence = 1;
      mObservedSequence = mSequence;
      mInOverrun = false;
-@@ -593,6 +593,8 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
+@@ -492,6 +492,8 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, audio_session_t tri
          // we've successfully started, log that time
          mMediaMetrics.logStart(systemTime());
      }
@@ -33,7 +33,7 @@ index 77037bd..b86d664 100644
      return status;
  }
  
-@@ -941,17 +943,26 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
+@@ -855,17 +857,26 @@ status_t AudioRecord::createRecord_l(const Modulo<uint32_t> &epoch)
          return status;
      }
  
@@ -68,7 +68,7 @@ index 77037bd..b86d664 100644
      ALOG_ASSERT(output.audioRecord != 0);
  
 diff --git a/media/libaudioclient/camera_record_service.cpp b/media/libaudioclient/camera_record_service.cpp
-index c470700..326ba92 100644
+index 10fbb62..4f26f8f 100644
 --- a/media/libaudioclient/camera_record_service.cpp
 +++ b/media/libaudioclient/camera_record_service.cpp
 @@ -59,7 +59,7 @@ status_t BpCameraRecordService::initRecord(
@@ -127,7 +127,7 @@ index c470700..326ba92 100644
              return NO_ERROR;
          } break;
          default:
-@@ -211,7 +218,7 @@ status_t CameraRecordService::initRecord(
+@@ -213,7 +220,7 @@ status_t CameraRecordService::initRecord(
      return NO_ERROR;
  }
  
@@ -136,7 +136,7 @@ index c470700..326ba92 100644
                              audio_format_t format,
                              audio_channel_mask_t channelMask,
                              size_t frameCount,
-@@ -272,7 +279,7 @@ Exit:
+@@ -274,7 +281,7 @@ Exit:
      if (status) {
          *status = lStatus;
      }
@@ -197,5 +197,5 @@ index 8a4e7f5..eb544d1 100644
                                  audio_format_t format,
                                  audio_channel_mask_t channelMask,
 -- 
-2.41.0
+2.45.2
 

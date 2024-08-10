@@ -1,63 +1,46 @@
-From a00c72d54db4af9a7350e291b5b1629d4d7ee8c9 Mon Sep 17 00:00:00 2001
+From b419dfacdab65391d337bcee8bd54fe36090eb94 Mon Sep 17 00:00:00 2001
 From: TheKit <thekit@disroot.org>
-Date: Wed, 10 May 2023 15:12:57 +0500
-Subject: [PATCH] (halium) init.rc: disable and do not wait for odsign daemon
+Date: Thu, 23 Mar 2023 14:57:59 +0300
+Subject: [PATCH 18/19] (halium) init.rc: disable and do not wait for odsign
+ daemon
 
 Change-Id: I8193b1af06f60bd8304a04a44fc90400c54d0660
 ---
- rootdir/init.rc | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ rootdir/init.rc | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/rootdir/init.rc b/rootdir/init.rc
-index 02e51d2..b1327a2 100644
+index 1a11e51..bfc91ec 100644
 --- a/rootdir/init.rc
 +++ b/rootdir/init.rc
-@@ -995,11 +995,13 @@ on post-fs-data
+@@ -1059,10 +1059,14 @@ on post-fs-data
      # Start the on-device signing daemon, and wait for it to finish, to ensure
      # ART artifacts are generated if needed.
      # Must start after 'derive_classpath' to have *CLASSPATH variables set.
 -    start odsign
++
 +    # Disabled for Halium
 +    # start odsign
  
-     # Before we can lock keys and proceed to the next boot stage, wait for
-     # odsign to be done with the key
+     # Wait for odsign to be done with the key.
 -    wait_for_prop odsign.key.done 1
++
 +    # Disabled for Halium
 +    # wait_for_prop odsign.key.done 1
  
-     # Lock the fs-verity keyring, so no more keys can be added
-     exec -- /system/bin/fsverity_init --lock
-@@ -1034,7 +1036,8 @@ on post-fs-data
+     # Bump the boot level to 1000000000; this prevents further on-device signing.
+     # This is a special value that shuts down the thread which listens for
+@@ -1093,7 +1097,9 @@ on post-fs-data
  # It is recommended to put unnecessary data/ initialization from post-fs-data
  # to start-zygote in device's init.rc to unblock zygote start.
- on zygote-start && property:ro.crypto.state=unencrypted
+ on zygote-start
 -    wait_for_prop odsign.verification.done 1
-+    # Halium: do not wait for odsign
++    # Halium: Do not wait for odsign
 +    # wait_for_prop odsign.verification.done 1
++
      # A/B update verifier that marks a successful boot.
-     exec_start update_verifier_nonencrypted
-     start statsd
-@@ -1043,7 +1046,8 @@ on zygote-start && property:ro.crypto.state=unencrypted
-     start zygote_secondary
- 
- on zygote-start && property:ro.crypto.state=unsupported
--    wait_for_prop odsign.verification.done 1
-+    # Halium: do not wait for odsign
-+    # wait_for_prop odsign.verification.done 1
-     # A/B update verifier that marks a successful boot.
-     exec_start update_verifier_nonencrypted
-     start statsd
-@@ -1052,7 +1056,8 @@ on zygote-start && property:ro.crypto.state=unsupported
-     start zygote_secondary
- 
- on zygote-start && property:ro.crypto.state=encrypted && property:ro.crypto.type=file
--    wait_for_prop odsign.verification.done 1
-+    # Halium: do not wait for odsign
-+    # wait_for_prop odsign.verification.done 1
-     # A/B update verifier that marks a successful boot.
-     exec_start update_verifier_nonencrypted
+     exec_start update_verifier
      start statsd
 -- 
-2.40.1
+2.45.2
 

@@ -1,26 +1,26 @@
-From 23dca0e7061bb3917ad0f3822eed095aff29ab6d Mon Sep 17 00:00:00 2001
+From d5f09e8cd7d2cd448bde5447724171728d88addd Mon Sep 17 00:00:00 2001
 From: TheKit <nekit1000@gmail.com>
-Date: Fri, 21 Apr 2023 15:20:25 +0500
-Subject: [PATCH] (halium) do not attempt to mount partitions with metadata
+Date: Sun, 3 Oct 2021 00:45:17 +0300
+Subject: [PATCH 2/2] (halium) do not attempt to mount partitions with metadata
  encryption
 
-Change-Id: Icdab66b868b722224e53568ce9d75025f7b7a167
+Change-Id: I77b72f49301879e960d7a8992c2736ccd5cc7096
 ---
- MetadataCrypt.cpp | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ MetadataCrypt.cpp | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/MetadataCrypt.cpp b/MetadataCrypt.cpp
-index 50943fc..ab467be 100644
+index 1f7d649..2473ecb 100644
 --- a/MetadataCrypt.cpp
 +++ b/MetadataCrypt.cpp
-@@ -240,9 +240,10 @@ static bool parse_options(const std::string& options_string, CryptoOptions* opti
+@@ -248,10 +248,9 @@ static bool parse_options(const std::string& options_string, CryptoOptions* opti
  bool fscrypt_mount_metadata_encrypted(const std::string& blk_device, const std::string& mount_point,
                                        bool needs_encrypt, bool should_format,
-                                       const std::string& fs_type) {
+                                       const std::string& fs_type, const std::string& zoned_device) {
 -    LOG(DEBUG) << "fscrypt_mount_metadata_encrypted: " << mount_point
 -               << " encrypt: " << needs_encrypt << " format: " << should_format << " with "
--               << fs_type;
-+
+-               << fs_type << " block device: " << blk_device
+-               << " and zoned device: " << zoned_device;
 +    // Disabled for Halium
 +    return false;
 +
@@ -28,5 +28,5 @@ index 50943fc..ab467be 100644
      if (encrypted_state != "" && encrypted_state != "encrypted") {
          LOG(ERROR) << "fscrypt_mount_metadata_encrypted got unexpected starting state: "
 -- 
-2.39.2
+2.45.2
 
