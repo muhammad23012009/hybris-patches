@@ -1,0 +1,51 @@
+From 3899bfd23d525235ff6f80d850dc2eaf9937f1cb Mon Sep 17 00:00:00 2001
+From: Muhammad <muhammad23012009@hotmail.com>
+Date: Tue, 13 Aug 2024 21:18:25 +0500
+Subject: [PATCH] (halium) don't run restorecon on apex paths
+
+Change-Id: I00e3cc3f9e06cb0644e1f48d27f4a2663de8b6f5
+Signed-off-by: Muhammad <muhammad23012009@hotmail.com>
+---
+ apexd/apexd.cpp     | 3 ++-
+ apexd/apexd_utils.h | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/apexd/apexd.cpp b/apexd/apexd.cpp
+index 8e539cf..6690c0a 100644
+--- a/apexd/apexd.cpp
++++ b/apexd/apexd.cpp
+@@ -3648,12 +3648,13 @@ int OnOtaChrootBootstrap(bool also_include_staged_apexes) {
+ 
+   fd.reset();
+ 
++/*
+   if (auto status = RestoreconPath(file_name); !status.ok()) {
+     LOG(ERROR) << "Failed to restorecon " << file_name << " : "
+                << status.error();
+     return 1;
+   }
+-
++*/
+   return 0;
+ }
+ 
+diff --git a/apexd/apexd_utils.h b/apexd/apexd_utils.h
+index d2d6566..15c02ff 100644
+--- a/apexd/apexd_utils.h
++++ b/apexd/apexd_utils.h
+@@ -307,10 +307,11 @@ inline android::base::Result<uintmax_t> GetFileSize(
+ }
+ 
+ inline android::base::Result<void> RestoreconPath(const std::string& path) {
+-  unsigned int seflags = SELINUX_ANDROID_RESTORECON_RECURSE;
++/*  unsigned int seflags = SELINUX_ANDROID_RESTORECON_RECURSE;
+   if (selinux_android_restorecon(path.c_str(), seflags) < 0) {
+     return android::base::ErrnoError() << "Failed to restorecon " << path;
+   }
++*/
+   return {};
+ }
+ 
+-- 
+2.45.2
+
